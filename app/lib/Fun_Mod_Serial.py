@@ -287,6 +287,7 @@ class LECTORAS(object):
         #if FS_Mensajes: print 'Resicion _Datos TX_QR600_VHK_E'
 
         if len(rcv) > 0:
+            #print 'QR: ' + rcv
             if (rcv.find('<') != -1 ) and (rcv.find('>') != -1) :
                 #print rcv.find('<')
                 #print rcv.find('>')
@@ -296,14 +297,21 @@ class LECTORAS(object):
                 Dato =ES_QR
 
             else:
-                Dato_Hex = self.Convertir_Datos_Hex(rcv)
-                if FS_Mensajes: print 'Datos RX_HEX:' + Dato_Hex
-                Estado, Dato = self.Analisis_Trama_RX__QR600_VHK_E(Dato_Hex)
+
+                secuencia = rcv.split("AA")
+                #print len(secuencia)
+                if len(secuencia) >=3:
+                    #print secuencia[1]
+                    Estado = 4
+                    Dato ="AA"+secuencia[1]+"AA"
+                else:
+                    Dato_Hex = self.Convertir_Datos_Hex(rcv)
+                    if FS_Mensajes: print 'Datos RX_HEX:' + Dato_Hex
+                    Estado, Dato = self.Analisis_Trama_RX__QR600_VHK_E(Dato_Hex)
 
 
             if Estado != 0 and Estado != 1:
                     if FS_Mensajes: print 'Resultado: ' + str(Estado) + ', ' + str (Dato)
-
                     if      Estado == 2:    self.Decision_Tag( str(Dato) )
                     elif    Estado == 3:    self.Decision_Teclado(Dato)
                     elif    Estado == 4:    self.Decision_Qr(Dato)
