@@ -72,19 +72,48 @@ class LECTORAS(object):
 
         self.TECLAS =''          # guardado de teclado valido
         self.TECLAS_antes =''    # teclado anterior
+        self.Port = -1
 
-        self.Sede = Locacion
-        self.Canal = Port_Config
+        self.Canal  = Port_Config
+        self.Sede   = Locacion
+
+        #Port_Config = '3'
         if Port_Config == '0':   self.Puerto  = '/dev/ttyUSB0'
         if Port_Config == '1':   self.Puerto  = '/dev/ttyUSB1'
         if Port_Config == '2':   self.Puerto  = '/dev/ttyUSB2'
         if Port_Config == '3':   self.Puerto  = '/dev/ttyS0'
 
         self.Lectora = Lectoras
-        Baudios = self.Baut_Serial()
+        self.Baudios = self.Baut_Serial()
 
-        self.Port = serial.Serial(self.Puerto, baudrate=Baudios, timeout=1)
-        print 'Inicio: ' + self.Puerto
+        Arc_Puerto = self.Puerto.split("/")
+        Cantidad = 3
+        for Intentos in range(Cantidad):
+            time.sleep(5)
+            print 'Intento: ' + str(Intentos)
+            res = commands.getoutput('dmesg | grep '+ Arc_Puerto[2])
+            if len(res) >10:
+                try :
+                    self.Port = serial.Serial(self.Puerto, baudrate=self.Baudios, timeout=1)
+                    print 'OK: ' + self.Puerto
+                    break
+                except SerialException:
+                    print 'Error en el puerto'
+                    print 'Inicio: ' + str(self.Port)
+            else: print 'NO exite el puerto'
+
+        #print 'puerto: ' + str(self.Port)
+        #---------------------------------------
+        self.Lectura_COM_QR     = ''
+        self.Lectura_STATUS_QR  = ''
+        #---------------------------------------
+        self.Enrutar_Archivos_Salida()
+        print self.Lectura_COM_QR
+        print self.Lectura_STATUS_QR
+
+
+
+
     #---------------------------------------------------------
     def Transmitir_Datos(self):
         data = ''
@@ -103,35 +132,38 @@ class LECTORAS(object):
                 self.Recivir_Datos()
 
             except SerialException:
-                    """
-                    if Iniciar_Serial() == 0:
-                        if FS_Mensajes: print 'Serrando el proceso por fallo grave en el Puerto'
+                for Intentos in range(3):
+                    time.sleep(5)
+                    try :
+                        self.Port = serial.Serial(self.Puerto, baudrate=self.Baudios, timeout=1)
                         break;
-                    """
-                    print 'Error'
+                    except SerialException:
+                        print 'error'
     #---------------------------------------------------------
     def Inicio_Lectora(self):
-        self.th_swrite = Thread(target=self.Proceso_Serial)
-        self.th_swrite.start()
+        if self.Port != -1:
+            self.th_swrite = Thread(target=self.Proceso_Serial)
+            self.th_swrite.start()
     #---------------------------------------------------------
     #---------------------------------------------------------
     #----       funciones del serial
     #---------------------------------------------------------
     #---------------------------------------------------------
     def Procesar_RX(self, Data):
-        if      self.Lectora == 'QR600-VHK-E'  : self.Procesar_RX_QR600_VHK_E(Data)
-        elif    self.Lectora == 'QR600'        : print 'NO Resive'
-        else                              : print 'NO Resive'
+        if      self.Lectora == 'QR600-VHK-E'    : self.Procesar_RX_QR600_VHK_E(Data)
+        elif    self.Lectora == 'YHD_M800D_TTL'  : self.Procesar_RX_YHD_M800D_TTL(Data)
+        else                                     : print 'NO Resive'
     #---------------------------------------------------------
     def Procesar_TX(self):
-        if      self.Lectora == 'QR600-VHK-E'  : return self.TX_QR600_VHK_E()
-        elif    self.Lectora == 'QR600'        : return ''
+        if      self.Lectora == 'QR600-VHK-E'    : return self.TX_QR600_VHK_E()
+        elif    self.Lectora == 'YHD_M800D_TTL'  : return ''
         else                              : return ''
     #---------------------------------------------------------
     def Baut_Serial(self):
 
-        if      self.Lectora == 'QR600-VHK-E'  : return self.Baudios_QR600_VHK_E()
-        elif    self.Lectora == 'QR600'        : return ''
+        if      self.Lectora == 'QR600-VHK-E'    : return self.Baudios_QR600_VHK_E()
+        elif    self.Lectora == 'YHD_M800D_TTL'  : return self.Baudios_YHD_M800D_TTL()
+        elif    self.Lectora == 'QR600'          : return ''
         else                              : return ''
     #---------------------------------------------------------
 
@@ -236,10 +268,136 @@ class LECTORAS(object):
         return 0, ""
 
 
+
+
+    #---------------------------------------------------------
+    #----       Funciones para el YHD_M800D_TTL
+    #---------------------------------------------------------
+    def Baudios_YHD_M800D_TTL (self):
+            #Baudios , ---
+        return 9600
+    #---------------------------------------------------------
+    def Procesar_RX_YHD_M800D_TTL(self,rcv):
+
+        global FS_Mensajes
+
+        Estado = 0
+        Dato =''
+
+        #if FS_Mensajes: print 'Resicion _Datos TX_QR600_VHK_E'
+
+        if len(rcv) > 0:
+            if (rcv.find('<') != -1 ) and (rcv.find('>') != -1) :
+                #print rcv.find('<')
+                #print rcv.find('>')
+                ES_QR = rcv[rcv.find('<'): rcv.find('>')+1]
+                #print 'QR: ' + ES_QR
+                Estado = 4
+                Dato =ES_QR
+
+            else:
+                Dato_Hex = self.Convertir_Datos_Hex(rcv)
+                if FS_Mensajes: print 'Datos RX_HEX:' + Dato_Hex
+                Estado, Dato = self.Analisis_Trama_RX__QR600_VHK_E(Dato_Hex)
+
+
+            if Estado != 0 and Estado != 1:
+                    if FS_Mensajes: print 'Resultado: ' + str(Estado) + ', ' + str (Dato)
+
+                    if      Estado == 2:    self.Decision_Tag( str(Dato) )
+                    elif    Estado == 3:    self.Decision_Teclado(Dato)
+                    elif    Estado == 4:    self.Decision_Qr(Dato)
+    #---------------------------------------------------------
+    def Analisis_Trama_RX_YHD_M800D_TTL(self,Tag_data):
+        if len(Tag_data) > 0:
+            #print Tag_data[0:5]
+            #print Tag_data.find(' aa 1')
+            #print 'Cadena balida: '+ Tag_data[Tag_data.find(' aa 1'):]
+            if Tag_data.find(' aa 1') > -1:
+                Tag_data = Tag_data[Tag_data.find(' aa 1'):]
+
+
+            if ' aa 1' in Tag_data[0:5]:
+                if ' aa 1 97 1 0 7 1 b6'        in Tag_data:
+                    #print 'Peticion      : ' + Tag_data
+                    return 1, ""
+                elif ' aa 1 c9 1 0 0 53 9c'  in Tag_data:
+                    #print 'Rx sin Nada   : ' + Tag_data
+                    return 1, ""
+                elif ' aa 1 c8 '                in Tag_data:
+                    #print 'Datos         : ' + Tag_data
+                    Datos = Tag_data.split(" ")
+                    Tipo = int(Datos[7])
+                    #print 'Tipo          : ' + str(Tipo)
+                    if Tipo == 2:
+                        #covercion de formato de hex a decimal
+                        Numero =""
+                        for i in range(9 + int(Datos[8],base=16), 9, -1):  Numero += Datos[i]
+                        #print 'Tag o Targeta :'+ str(int(Numero,base=16))
+                        Decimal = int(Numero,base=16)
+                        return 2, Decimal
+                        #TX_datos_hex('Verde')
+                    elif Tipo == 3:
+                        #covercion de formato de desima a anssi numerico
+                        Numero =""
+                        for i in range(10, 10 + int(Datos[8],base=16)):  Numero += str(int(Datos[i])-30)
+
+                        #print 'Teclado   : ' + Numero
+                        return 3, Numero
+                        #TX_datos_hex('Verde')
+                    else:
+                        #print 'No definido  : ' + Tag_data
+                        #TX_datos_hex('Rojo')
+                        return 0, ""
+
+                else:
+                    #print 'Otras      : ' + Tag_data
+                    return 0, ""
+
+        return 0, ""
+
+
+
+
+
+
     #---------------------------------------------------------
     #----       Funciones para todos los dispositivos
     #---------------------------------------------------------
 
+    def Enrutar_Archivos_Salida(self):
+
+        if self.Sede == '0':
+            if  self.Canal == '0' or self.Canal == '3':
+                self.Lectura_COM_QR     = S0 + COM_QR
+                self.Lectura_STATUS_QR  = S0 + STATUS_QR
+            elif  self.Canal == '1':
+                self.Lectura_COM_QR     = S0 + COM_QR_S1
+                self.Lectura_STATUS_QR  = S0 + STATUS_QR
+            elif  self.Canal == '2':
+                self.Lectura_COM_QR     = S0 + COM_QR_S2
+                self.Lectura_STATUS_QR  = S0 + STATUS_QR
+        elif self.Sede == '1':
+            if    self.Canal == '0' or self.Canal == '3':
+                self.Lectura_COM_QR     = S1 + COM_QR
+                self.Lectura_STATUS_QR  = S1 + STATUS_QR
+            elif  self.Canal == '1':
+                self.Lectura_COM_QR     = S1 + COM_QR_S1
+                self.Lectura_STATUS_QR  = S1 + STATUS_QR
+            elif  self.Canal == '2':
+                self.Lectura_COM_QR     = S1 + COM_QR_S2
+                self.Lectura_STATUS_QR  = S1 + STATUS_QR
+        elif self.Sede == '2':
+            if    self.Canal == '0' or self.Canal == '3':
+                self.Lectura_COM_QR     = S2 + COM_QR
+                self.Lectura_STATUS_QR  = S2 + STATUS_QR
+            elif  self.Canal == '1':
+                self.Lectura_COM_QR     = S2 + COM_QR_S1
+                self.Lectura_STATUS_QR  = S2 + STATUS_QR
+            elif  self.Canal == '2':
+                self.Lectura_COM_QR     = S2 + COM_QR_S2
+                self.Lectura_STATUS_QR  = S2 + STATUS_QR
+    #---------------------------------------------------------
     def Convertir_Datos_Hex(self,Dato):
 
         Tag_data =""
@@ -248,6 +406,8 @@ class LECTORAS(object):
             Tag_data += datohex.replace('0x'," ")
 
         return Tag_data
+    #---------------------------------------------------------
+
 
 
     #---------------------------------------------------------
@@ -259,7 +419,7 @@ class LECTORAS(object):
         if FS_Mensajes: print 'Nuevo: ' + Teclado
         self.Guardar_Teclado(Teclado)
         self.Activar_Teclado()
-    #----------------------------------------------------------
+    #---------------------------------------------------------
     def Guardar_Teclado(self,Teclado):
 
         TecladoG = Teclado.replace ("<","")
@@ -275,7 +435,7 @@ class LECTORAS(object):
         elif self.Canal == '2':
             Clear_File(COM_TECLADO_S2)          # Borrar TECLADO
             Set_File(COM_TECLADO_S2, TecladoG)  # Guardar TECLADO
-    #---------------------------------------------------------------------------------------
+    #---------------------------------------------------------
     def Activar_Teclado(self):
         if   self.Canal == '0': Set_File(S0+STATUS_TECLADO, '1')    #Escrivir_Estados('1',8) # Cambiar estado del QR
         elif self.Canal == '1': Set_File(S1+STATUS_TECLADO, '1')    #Escrivir_Estados('1',8) # Cambiar estado del QR
@@ -335,12 +495,12 @@ class LECTORAS(object):
                 #if SQ_Mensajes:
                 print 'Repetido'
                 #Set_File(STATUS_REPEAT_QR, '2')    # Estado QR repetido
-    #---------------------------------------------------------------------------------------
+    #---------------------------------------------------------
     def Activar_Tag(self):
         if   self.Canal == '0': Set_File(S0+STATUS_NFC, '1')    #Escrivir_Estados('1',8) # Cambiar estado del QR
         elif self.Canal == '1': Set_File(S1+STATUS_NFC, '1')    #Escrivir_Estados('1',8) # Cambiar estado del QR
         elif self.Canal == '2': Set_File(S2+STATUS_NFC, '1')    #Escrivir_Estados('1',8) # Cambiar estado del QR
-    #---------------------------------------------------------------------------------------
+    #---------------------------------------------------------
     def Guardar_Tag(self,Tag):
 
         TagG = Tag.replace ("<","")
@@ -358,7 +518,7 @@ class LECTORAS(object):
             Clear_File(S2+COM_NFC)          # Borrar NFC
             Set_File(S2+COM_NFC, TagG)      # Guardar NFC
     #---------------------------------------------------------
-    #----       Funciones Tag o Targeta
+    #----       Funciones QR o Targeta
     #---------------------------------------------------------
     def Decision_Qr(self,x):
         global FS_Mensajes#, QR, QR_antes, T_Nuev_QR, T_Repe_QR, T_Maximo_QR
@@ -381,26 +541,13 @@ class LECTORAS(object):
             else:
                 if FS_Mensajes: print 'Repetido'
                 #Set_File(STATUS_REPEAT_QR, '2')    # Estado QR repetido
-    #---------------------------------------------------------------------------------------
+    #---------------------------------------------------------
     def Activar_QR(self):
-        if   self.Canal == '0': Set_File(S0+STATUS_QR, '1')    #Escrivir_Estados('1',8) # Cambiar estado del QR
-        elif self.Canal == '1': Set_File(S1+STATUS_QR, '1')    #Escrivir_Estados('1',8) # Cambiar estado del QR
-        elif self.Canal == '2': Set_File(S2+STATUS_QR, '1')    #Escrivir_Estados('1',8) # Cambiar estado del QR
-    #---------------------------------------------------------------------------------------
+        Set_File(self.Lectura_STATUS_QR, '1')    #Escrivir_Estados('1',8) # Cambiar estado del QR
+    #---------------------------------------------------------
     def Guardar_QR(self):
-        if self.Sede == '0':
-        if self.Sede == '1':
-        if self.Sede == '2':
-
-        if self.Canal == '0':
-            Clear_File(S0+COM_QR)         # Borrar QR
-            Set_File(S0+COM_QR, self.QR)  # Guardar QR
-        elif self.Canal == '1':
-            Clear_File(S1+COM_QR)         # Borrar QR
-            Set_File(S1+COM_QR, self.QR)  # Guardar QR
-        elif self.Canal == '2':
-            Clear_File(S2+COM_QR)         # Borrar QR
-            Set_File(S2+COM_QR, self.QR)  # Guardar QR
+        Clear_File(self.Lectura_COM_QR)
+        Set_File(self.Lectura_COM_QR, self.QR)
 
 
 

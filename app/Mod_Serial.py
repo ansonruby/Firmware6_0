@@ -35,7 +35,7 @@ Lectoras = Get_File(HUB + CONF_LECTORAS)
 for Lectora in Lectoras.split('\n'):
     if len(Lectora) > 0:
         Conf_Lector = Lectora.split(".")
-        VECTOR_LECTORAS.append(LECTORAS (Conf_Lector[0], Conf_Lector[1]))
+        VECTOR_LECTORAS.append(LECTORAS (Conf_Lector[0], Conf_Lector[1], Conf_Lector[2]))
 
 for Lectora in VECTOR_LECTORAS:
     Lectora.Inicio_Lectora()

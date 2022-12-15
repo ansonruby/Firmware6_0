@@ -130,37 +130,37 @@ def Blink():
         if Salir_hilo == 0:             break;
 
 def Led_Derecha():
-    Tiempo_Rele =int(Get_File(CONF_TIEM_RELE))
+    Tiempo_Rele =int(Get_File(S0+CONF_TIEM_RELE))
     #-----  para visusalisaxcion en el teclado  del estado del usuario
-    Conf_Flecha =Get_File(CONF_FLECHA_TECLADO)
-    if Conf_Flecha == 'Flecha':     Set_File(STATUS_USER, '3')
-    else                      :     Set_File(STATUS_USER, 'Permitido')
+    Conf_Flecha =Get_File(S0+CONF_FLECHA_TECLADO)
+    if Conf_Flecha == 'Flecha':     Set_File(S0+STATUS_USER, '3')
+    else                      :     Set_File(S0+STATUS_USER, 'Permitido')
 
     Ejecutar_Comando('3')
     time.sleep(Tiempo_Rele)
     Ejecutar_Comando('0')
     #-----  para visusalisaxcion en el teclado  del estado del usuario
-    Clear_File(STATUS_USER)
+    Clear_File(S0+STATUS_USER)
 
 def Led_Izquierda():
-    Tiempo_Rele =int(Get_File(CONF_TIEM_RELE))
+    Tiempo_Rele =int(Get_File(S0+CONF_TIEM_RELE))
     #-----  para visusalisaxcion en el teclado  del estado del usuario
-    Conf_Flecha =Get_File(CONF_FLECHA_TECLADO)
-    if Conf_Flecha == 'Flecha':     Set_File(STATUS_USER, '4')
-    else                      :     Set_File(STATUS_USER, 'Permitido')
+    Conf_Flecha =Get_File(S0+CONF_FLECHA_TECLADO)
+    if Conf_Flecha == 'Flecha':     Set_File(S0+STATUS_USER, '4')
+    else                      :     Set_File(S0+STATUS_USER, 'Permitido')
     Ejecutar_Comando('4')
     time.sleep(Tiempo_Rele)
     Ejecutar_Comando('0')
     #-----  para visusalisaxcion en el teclado  del estado del usuario
-    Clear_File(STATUS_USER)
+    Clear_File(S0+STATUS_USER)
 
 def Led_Error():
-    Tiempo_Rele =int(Get_File(CONF_TIEM_RELE))
+    Tiempo_Rele =int(Get_File(S0+CONF_TIEM_RELE))
     rango = 10
     #-----  para visusalisaxcion en el teclado  del estado del usuario
-    Conf_Flecha =Get_File(CONF_FLECHA_TECLADO)
-    if Conf_Flecha == 'Flecha':     Set_File(STATUS_USER, '6')
-    else                      :     Set_File(STATUS_USER, '6')
+    Conf_Flecha =Get_File(S0+CONF_FLECHA_TECLADO)
+    if Conf_Flecha == 'Flecha':     Set_File(S0+STATUS_USER, '6')
+    else                      :     Set_File(S0+STATUS_USER, '6')
 
     for i in range(rango):
         Ejecutar_Comando('6')
@@ -170,7 +170,7 @@ def Led_Error():
 
     Ejecutar_Comando('0')
     #-----  para visusalisaxcion en el teclado  del estado del usuario
-    Clear_File(STATUS_USER)
+    Clear_File(S0+STATUS_USER)
 
 def Activar_Hilo_Comando():
     global B_Hilo_Comado
@@ -186,10 +186,10 @@ def Eventos_Led():
 
     while (True):
         time.sleep(0.1)
-        Comando =Get_File(COM_LED)
+        Comando =Get_File(S0+COM_LED)
         if Comando != '':
             if Comando == 'Access granted-E':
-                Direc = Get_File(CONF_DIREC_RELE)   #Leer_Archivo(13)  # Direccion_Torniquete
+                Direc = Get_File(S0+CONF_DIREC_RELE)   #Leer_Archivo(13)  # Direccion_Torniquete
                 if Direc == 'D':
                     #Salir()
                     if B_Hilo_Salir.isAlive() is False:
@@ -201,11 +201,11 @@ def Eventos_Led():
                         B_Hilo_Entrada   = threading.Thread(target=Led_Izquierda)
                         B_Hilo_Entrada.start()
 
-                Clear_File(COM_LED)
+                Clear_File(S0+COM_LED)
 
             elif Comando == 'Access granted-S':
                 #print ('S')
-                Direc = Get_File(CONF_DIREC_RELE)   #Leer_Archivo(13)  # Direccion_Torniquete
+                Direc = Get_File(S0+CONF_DIREC_RELE)   #Leer_Archivo(13)  # Direccion_Torniquete
                 if Direc == 'D':
                     #Entrar()
                     if B_Hilo_Entrada.isAlive() is False:
@@ -217,7 +217,7 @@ def Eventos_Led():
                         B_Hilo_Salir   = threading.Thread(target=Led_Derecha)
                         B_Hilo_Salir.start()
 
-                Clear_File(COM_LED)
+                Clear_File(S0+COM_LED)
 
             elif Comando == 'Error':
 
@@ -225,7 +225,7 @@ def Eventos_Led():
                     B_Hilo_Error   = threading.Thread(target=Led_Error)
                     B_Hilo_Error.start()
 
-                Clear_File(COM_LED)
+                Clear_File(S0+COM_LED)
 
             elif Comando != Comando_Antes :
                 #print (Comando)
@@ -236,7 +236,7 @@ def Eventos_Led():
                     Activar_Hilo_Comando()
                 else :
                     Ejecutar_Comando(Comando)
-                Clear_File(COM_LED)
+                Clear_File(S0+COM_LED)
 
 
 #-------------------------------------------------------
