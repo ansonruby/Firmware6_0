@@ -117,15 +117,15 @@ STATUS_BUTTON_NOTOUCH      = CONF + 'NoTouch/status.txt'                     # A
 #                                  Sensor QR
 #---------------------------------------------------------------------------------------
 
-COM_QR              = COMMA + 'Qr/Com_Qr.txt'                                # Datos leidos del qr
-STATUS_QR           = STATUS + 'Qr/Status_Qr.txt'                            # Estado del qr
-STATUS_REPEAT_QR    = STATUS + 'Qr/Repeat_Qr.txt'                            # Estado de repeticion del qr
+COM_QR              = COMMA  + 'Qr/Com_Qr.txt'                              # Datos leidos del qr
+STATUS_QR           = STATUS + 'Qr/Status_Qr.txt'                           # Estado del qr
+STATUS_REPEAT_QR    = STATUS + 'Qr/Repeat_Qr.txt'                           # Estado de repeticion del qr
 
-COM_QR_S1          = FIRM + COMMA + 'Qr/Com_Qr_S1.txt'                        # Datos leidos del qr
-STATUS_QR_S1       = FIRM + STATUS + 'Qr/Status_Qr_S1.txt'                    # Estado del qr
+COM_QR_S1           = COMMA  + 'Qr/Com_Qr_S1.txt'                           # Datos leidos del qr
+STATUS_QR_S1        = STATUS + 'Qr/Status_Qr_S1.txt'                        # Estado del qr
 
-COM_QR_S2          = FIRM + COMMA + 'Qr/Com_Qr_S2.txt'                        # Datos leidos del qr
-STATUS_QR_S2       = FIRM + STATUS + 'Qr/Status_Qr_S2.txt'                    # Estado del qr
+COM_QR_S2           = COMMA  + 'Qr/Com_Qr_S2.txt'                           # Datos leidos del qr
+STATUS_QR_S2        = STATUS + 'Qr/Status_Qr_S2.txt'                        # Estado del qr
 #---------------------------------------------------------------------------------------
 #                                   Teclado
 #---------------------------------------------------------------------------------------
@@ -143,6 +143,10 @@ Link_Alerta         = FIRM + IMG + "Teclado/alerta2.png"                        
 
 COM_TECLADO         = COMMA + 'Teclado/Com_Teclado.txt'                      # comandos teclados o lo digitado
 STATUS_TECLADO      = STATUS + 'Teclado/Status_Teclado.txt'                  # Estados teclados o si digito
+COM_TECLADO_S1      = COMMA + 'Teclado/Com_Teclado_S1.txt'          # comandos teclados o lo digitado
+STATUS_TECLADO_S1   = STATUS + 'Teclado/Status_Teclado_S1.txt'      # Estados teclados o si digito
+COM_TECLADO_S2      = COMMA + 'Teclado/Com_Teclado_S2.txt'          # comandos teclados o lo digitado
+STATUS_TECLADO_S2   = STATUS + 'Teclado/Status_Teclado_S2.txt'      # Estados teclados o si digito
 
 #-------------- Configuraciones ----
 
@@ -214,6 +218,10 @@ COM_ACTUALIZADOR        = COMMA + 'Actualizador/Forzar_Actualizador.txt'     #
 COM_NFC                 = COMMA + 'Nfc/Com_Nfc.txt'                          # Datos leidos del Nfc
 STATUS_NFC              = STATUS + 'Nfc/Status_Nfc.txt'                      # Estado del Nfc
 STATUS_REPEAT_NFC       = STATUS + 'Nfc/Repeat_Nfc.txt'                      # Estado de repeticion del Nfc
+COM_NFC_S1              = COMMA + 'Nfc/Com_Nfc_S1.txt'                        # Datos leidos del Nfc
+STATUS_NFC_S1           = STATUS + 'Nfc/Status_Nfc_S1.txt'                    # Estado del Nfc
+COM_NFC_S2              = COMMA + 'Nfc/Com_Nfc_S2.txt'                        # Datos leidos del Nfc
+STATUS_NFC_S2           = STATUS + 'Nfc/Status_Nfc_S2.txt'                    # Estado del Nfc
 
 #---------------------------------------------------------------------------------------
 #                                  Serial_Modbus --- posiblemente se elimine en revicion ----

@@ -37,6 +37,7 @@ from lib.Lib_Rout import *  # importar con los mismos nombres
 #-----------------------------------------------------------
 #                       CONSTANTES
 #-----------------------------------------------------------
+
 Pin_Buzzer      = 7                   # Pin de salida de Buzzer
 Tiempo_sonido   = 0.05                # Tiempo minimo de activacion
 
@@ -63,9 +64,9 @@ def sonido(Rango):                                           # Funcion para Acti
 def Control_Sonidos_Por_Archivo():                          # Seleccion de sonido
 
     global Tiempo_sonido
-    Dato = Get_File(COM_BUZZER)
+    Dato = Get_File(S0 + COM_BUZZER)
     if len(Dato) >= 1 :
-        Clear_File(COM_BUZZER)
+        Clear_File(S0 + COM_BUZZER)
         if      (Dato =='0'): sonido(Tiempo_sonido*1)
         elif    (Dato =='1'): sonido(Tiempo_sonido*2)
         elif    (Dato =='2'): sonido(Tiempo_sonido*3)
