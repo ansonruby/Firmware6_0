@@ -121,6 +121,11 @@ COM_QR              = COMMA + 'Qr/Com_Qr.txt'                                # D
 STATUS_QR           = STATUS + 'Qr/Status_Qr.txt'                            # Estado del qr
 STATUS_REPEAT_QR    = STATUS + 'Qr/Repeat_Qr.txt'                            # Estado de repeticion del qr
 
+COM_QR_S1          = FIRM + COMMA + 'Qr/Com_Qr_S1.txt'                        # Datos leidos del qr
+STATUS_QR_S1       = FIRM + STATUS + 'Qr/Status_Qr_S1.txt'                    # Estado del qr
+
+COM_QR_S2          = FIRM + COMMA + 'Qr/Com_Qr_S2.txt'                        # Datos leidos del qr
+STATUS_QR_S2       = FIRM + STATUS + 'Qr/Status_Qr_S2.txt'                    # Estado del qr
 #---------------------------------------------------------------------------------------
 #                                   Teclado
 #---------------------------------------------------------------------------------------

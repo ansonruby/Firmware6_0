@@ -54,7 +54,7 @@ FS_Mensajes     = 1               # 0: NO print  1: Print
 class LECTORAS(object):
 
     #---------------------------------------------------------
-    def __init__(self, Port_Config, Lectoras):
+    def __init__(self, Port_Config, Lectoras, Locacion):
 
         self.TAG_NFC =''         # guardado de Tag valido
         self.TAG_NFC_antes =''   # Tag anterior
@@ -73,7 +73,7 @@ class LECTORAS(object):
         self.TECLAS =''          # guardado de teclado valido
         self.TECLAS_antes =''    # teclado anterior
 
-
+        self.Sede = Locacion
         self.Canal = Port_Config
         if Port_Config == '0':   self.Puerto  = '/dev/ttyUSB0'
         if Port_Config == '1':   self.Puerto  = '/dev/ttyUSB1'
@@ -388,6 +388,10 @@ class LECTORAS(object):
         elif self.Canal == '2': Set_File(S2+STATUS_QR, '1')    #Escrivir_Estados('1',8) # Cambiar estado del QR
     #---------------------------------------------------------------------------------------
     def Guardar_QR(self):
+        if self.Sede == '0':
+        if self.Sede == '1':
+        if self.Sede == '2':
+
         if self.Canal == '0':
             Clear_File(S0+COM_QR)         # Borrar QR
             Set_File(S0+COM_QR, self.QR)  # Guardar QR
