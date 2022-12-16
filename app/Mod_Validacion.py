@@ -7,17 +7,62 @@ def Validar_Acceso_Antiguos(*args):
     ans = False
     if medio_acceso == 1:
         ans = Validar_QR_Antiguo(*args)
+    elif medio_acceso == 2:
+        ans = Validar_NFC_Antiguo(*args)
     print ans
 
 
 def Validar_QR_Antiguo(access_data, tipo_acceso, medio_acceso, lectora):
     ans = False
     if tipo_acceso == 1:
-        db = Get_File(S0+TAB_USER_TIPO_1).strip()
-        ans = db
-    elif tipo_acceso == 4:
         db = Get_File(S0+TAB_USER_TIPO_1).strip().split("\n")
         ans = db
+    elif tipo_acceso == 3:
+        db = Get_File(S0+TAB_USER_TIPO_3).strip().split("\n")
+        ans = db
+    elif tipo_acceso == 4:
+        # to do
+        pass
+
+    if not ans:
+        ans = "Access denied"
+
+    return ans
+
+
+def Validar_NFC_Antiguo(access_data, tipo_acceso, medio_acceso, lectora):
+    ans = False
+    if tipo_acceso == 1:
+        db = Get_File(S0+TAB_USER_TIPO_1).strip().split("\n")
+        ans = db
+    elif tipo_acceso == 3:
+        db = Get_File(S0+TAB_USER_TIPO_3).strip().split("\n")
+        ans = db
+    elif tipo_acceso == 4:
+        # to do
+        pass
+
+    if not ans:
+        ans = "Access denied"
+
+    return ans
+
+
+def Validar_NFC_Antiguo(access_data, tipo_acceso, medio_acceso, lectora):
+    ans = False
+    if tipo_acceso == 1:
+        db = Get_File(S0+TAB_USER_TIPO_1).strip().split("\n")
+        ans = db
+    elif tipo_acceso == 3:
+        db = Get_File(S0+TAB_USER_TIPO_3).strip().split("\n")
+        ans = db
+    elif tipo_acceso == 4:
+        # to do
+        pass
+
+    if not ans:
+        ans = "Access denied"
+
     return ans
 
 # def auth_petition(access_data, ws, direction="0"):

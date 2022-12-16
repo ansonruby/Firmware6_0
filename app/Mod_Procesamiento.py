@@ -24,8 +24,10 @@ def Filtro_Tipos_Acceso_Antiguos(access_code, medio_acceso=1, lectora=0):
         # Tipo 4: Invitacion de multipes uso
         elif len(access_data) == 5:
             tipo_acceso = 4
-
-        Validar_Acceso_Antiguos(access_data, tipo_acceso, medio_acceso, lectora)
+        if tipo_acceso:
+            Validar_Acceso_Antiguos(access_data, tipo_acceso, medio_acceso, lectora)
+        else:
+            print "Invalid data of access"
 
     except Exception as e:
         print e
