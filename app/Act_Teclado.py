@@ -140,12 +140,12 @@ def Eventos():
     #------------------------------------------------
     #evento que muestar la informacion del dispsotivo
     #------------------------------------------------
-    ET = -1                 # Bandera activacion Teclado
-    EID = -1                # Bandera informacion dispositivo
-    EFF = -1                # Bandera actualizacion de firmware
-    EER = -1                # Bandera informacion red
-    EEU = -1                # Bandera Estados de usuarios
-    EEQ = -1                # Bandera Evento de estado de qr repetido
+    ET  = -1     # Bandera activacion Teclado
+    EID = -1     # Bandera informacion dispositivo
+    EFF = -1     # Bandera actualizacion de firmware
+    EER = -1     # Bandera informacion red
+    EEU = -1     # Bandera Estados de usuarios
+    EEQ = -1     # Bandera Evento de estado de qr repetido
     #------------------------------------------------
     ET  = Evento_Teclado()
     EID = Evento_Informacion_Dispositivo()
