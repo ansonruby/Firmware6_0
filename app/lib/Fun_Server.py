@@ -32,9 +32,9 @@ from lib.Lib_Rout import *            # importar con los mismos nombres
 
 def Get_Rout_server():#Mejor_Opcion_link
 
-    opciones    = Get_File(CONF_M_CONEX_SERVER)
-    IP_Ser      = Get_File(CONF_IP_SERVER)
-    Domi_Ser    = Get_File(CONF_DOMI_SERVER)
+    opciones    = Get_File(S0+CONF_M_CONEX_SERVER)
+    IP_Ser      = Get_File(S0+CONF_IP_SERVER)
+    Domi_Ser    = Get_File(S0+CONF_DOMI_SERVER)
 
     # return 'http://192.168.104.160:3000'
     # return 'http://34.221.7.202'

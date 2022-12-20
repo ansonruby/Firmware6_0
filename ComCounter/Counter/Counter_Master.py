@@ -217,7 +217,7 @@ def get_users():
         return save_users(petition.json())
 
 
-def save_users(data):
+def save_users(data):#-------
     granted_users = []
     granted_users.extend(data["data"])
     granted_users.extend(data["invitations"])
