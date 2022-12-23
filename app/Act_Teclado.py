@@ -140,12 +140,12 @@ def Eventos():
     #------------------------------------------------
     #evento que muestar la informacion del dispsotivo
     #------------------------------------------------
-    ET = -1                 # Bandera activacion Teclado
-    EID = -1                # Bandera informacion dispositivo
-    EFF = -1                # Bandera actualizacion de firmware
-    EER = -1                # Bandera informacion red
-    EEU = -1                # Bandera Estados de usuarios
-    EEQ = -1                # Bandera Evento de estado de qr repetido
+    ET  = -1     # Bandera activacion Teclado
+    EID = -1     # Bandera informacion dispositivo
+    EFF = -1     # Bandera actualizacion de firmware
+    EER = -1     # Bandera informacion red
+    EEU = -1     # Bandera Estados de usuarios
+    EEQ = -1     # Bandera Evento de estado de qr repetido
     #------------------------------------------------
     ET  = Evento_Teclado()
     EID = Evento_Informacion_Dispositivo()
@@ -218,7 +218,7 @@ def Dibujar():
     if Estados_visualizacion  == 1:         Pintar_mensaje( 38, 70, Inf_Dispositivo())
     if Estado_visual_Red  == 1:             Pintar_Status_Red(GET_STatus_Red())    #Pintar_Status_Red(Get_File(STATUS_RED))        # hacer actualizador red
     if Estado_visual_QR  == 1:              Pintar_QR_Repetido()
-    if Estado_visual_Usuario   == 1:        Pintar_Estados_Usuario( Get_File(STATUS_USER))
+    if Estado_visual_Usuario   == 1:        Pintar_Estados_Usuario( Get_File(S0+STATUS_USER))
     if Estado_visual_Forzar_Firmware  == 1: Pintar_mensaje( 38, 70, "           Forzando\n       Actualizacion\n            Firmware\n")
 
     pygame.display.flip()
@@ -622,7 +622,7 @@ def Evento_Estado_Usuario():
     #global Estado_Usuario
     global Estado_visual_Usuario
 
-    Usuario = Get_File(STATUS_USER)
+    Usuario = Get_File(S0+STATUS_USER)
 
     if '6' ==  Usuario or '3' ==  Usuario or '4' ==  Usuario or 'Permitido' ==  Usuario:
         #Estado_Usuario = Usuario

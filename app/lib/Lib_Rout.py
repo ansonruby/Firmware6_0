@@ -241,7 +241,23 @@ ID_MOD_RELES              = COMMA + 'Serial_Modbus/ID_MOD_Reles.txt'        # Da
 CONF_LECTORAS             = CONF + 'Lectoras/Configuraciones.txt'                   # conficugacion basica de tipos de lectoras
 
 #---------------------------------------------------------------------------------------
+#                                   Salidas
+#---------------------------------------------------------------------------------------
+
+CONF_SALIDAS              = CONF + 'Salidas/Configuraciones.txt'                   # conficugacion basica de tipos de lectoras
+
+#---------------------------------------------------------------------------------------
 #                                   Sedes
 #---------------------------------------------------------------------------------------
 
 CONF_SEDES                = CONF + 'Locaciones/Configuraciones.txt'                      # Configuracion de toda la sede y cuantas sedes
+
+
+
+#---------------------------------------------------------------------------------------
+#                                   Modulo respuesta
+#---------------------------------------------------------------------------------------
+
+COM_RES               = COMMA + 'Mod_Respuesta/Com_Res.txt'
+COM_RES_S1            = COMMA + 'Mod_Respuesta/Com_Res_S1.txt'
+COM_RES_S2            = COMMA + 'Mod_Respuesta/Com_Res_S2.txt'
