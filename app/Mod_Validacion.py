@@ -63,14 +63,14 @@ def Validar_QR_Antiguo(access_data, tipo_acceso, medio_acceso, lectora):
 def Validar_PIN_Antiguo(access_data, tipo_acceso, medio_acceso, lectora):
     access_valido = False
     access_key = False
-    if tipo_acceso == 6:
+    if tipo_acceso == 1:
         access_key = MD5(access_data[0])
-        db = Get_File(S0+TAB_USER_TIPO_6).strip().split("\n")
+        db = Get_File(S0+TAB_USER_TIPO_1).strip().split("\n")
         for access_db in db:
             if access_data == "":
                 continue
-            key_db = access_db[0]
-            if access_key == access_db[1]:
+            key_db, encrypted_pin = access_db.split(".")
+            if access_key == encrypted_pin:
                 access_valido = True
                 break
     respuesta_acceso = "Access denied"
@@ -84,14 +84,14 @@ def Validar_PIN_Antiguo(access_data, tipo_acceso, medio_acceso, lectora):
 def Validar_NFC_Antiguo(access_data, tipo_acceso, medio_acceso, lectora):
     access_valido = False
     access_key = False
-    if tipo_acceso == 1:
+    if tipo_acceso == 6:
         access_key = MD5(access_data[0])
         db = Get_File(S0+TAB_USER_TIPO_6).strip().split("\n")
         for access_db in db:
             if access_data == "":
                 continue
-            key_db = access_db[0]
-            if access_key == access_db[1]:
+            key_db, encrypted_pin = access_db.split(".")
+            if access_key == encrypted_pin:
                 access_valido = True
                 break
     respuesta_acceso = "Access denied"

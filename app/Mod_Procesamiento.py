@@ -7,7 +7,10 @@ import re
 
 def Filtro_Tipos_Acceso_Antiguos(access_code, medio_acceso=1, lectora=0):
     try:
-        access_list = re.findall("<(.*?)>", access_code)
+        access_list = [access_code]
+        if medio_acceso == 1:
+            access_list = re.findall("<(.*?)>", access_code)
+
         for access_text in access_list:
             access_data = access_text.split(".")
             tipo_acceso = False
@@ -15,7 +18,7 @@ def Filtro_Tipos_Acceso_Antiguos(access_code, medio_acceso=1, lectora=0):
             if medio_acceso == 11:
                 tipo_acceso = 6
 
-            # Tipo 1 0 2 o 5: LLave de acceso o Reserva general con QR o Llave empleado o Pin 
+            # Tipo 1 0 2 o 5: LLave de acceso o Reserva general con QR o Llave empleado o Pin
             elif len(access_data) == 2 or medio_acceso == 2:
                 tipo_acceso = 1
 
