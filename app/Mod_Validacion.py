@@ -1,5 +1,6 @@
-from lib.Lib_File import Get_File
 from lib.Lib_Rout import *
+from lib.Lib_File import Get_File
+from lib.Fun_Tipo_NFC import MD5
 import json
 
 
@@ -60,40 +61,42 @@ def Validar_QR_Antiguo(access_data, tipo_acceso, medio_acceso, lectora):
 
 
 def Validar_PIN_Antiguo(access_data, tipo_acceso, medio_acceso, lectora):
-    ans = False
-    if tipo_acceso == 1:
-        db = Get_File(S0+TAB_USER_TIPO_1).strip().split("\n")
-        ans = db
-    elif tipo_acceso == 3:
-        db = Get_File(S0+TAB_USER_TIPO_3).strip().split("\n")
-        ans = db
-    elif tipo_acceso == 4:
-        # to do
-        pass
+    access_valido = False
+    access_key = False
+    if tipo_acceso == 6:
+        access_key = MD5(access_data[0])
+        db = Get_File(S0+TAB_USER_TIPO_6).strip().split("\n")
+        for access_db in db:
+            if access_data == "":
+                continue
+            key_db = access_db[0]
+            if access_key == access_db[1]:
+                access_valido = True
+                break
+    respuesta_acceso = "Access denied"
+    if access_valido:
+        direction = Definir_Direccion(key_db)
+        respuesta_acceso = "Access granted-E" if direction == "0" else "Access granted-S"
 
-    if not ans:
-        ans = "Access denied"
-
-    return ans
+    return respuesta_acceso
 
 
 def Validar_NFC_Antiguo(access_data, tipo_acceso, medio_acceso, lectora):
     access_valido = False
     access_key = False
-    ans = False
-    if tipo_acceso == 6:
-        access_key = ".".join(access_data[1:5])
-        db = Get_File(S0+TAB_USER_TIPO_4).strip().split("\n")
+    if tipo_acceso == 1:
+        access_key = MD5(access_data[0])
+        db = Get_File(S0+TAB_USER_TIPO_6).strip().split("\n")
         for access_db in db:
             if access_data == "":
                 continue
-            key_db = ".".join(access_db.split(".")[1:5])
-            if access_key == key_db:
+            key_db = access_db[0]
+            if access_key == access_db[1]:
                 access_valido = True
                 break
     respuesta_acceso = "Access denied"
     if access_valido:
-        direction = Definir_Direccion(access_key)
+        direction = Definir_Direccion(key_db)
         respuesta_acceso = "Access granted-E" if direction == "0" else "Access granted-S"
 
     return respuesta_acceso

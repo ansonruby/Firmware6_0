@@ -15,7 +15,7 @@ def Filtro_Tipos_Acceso_Antiguos(access_code, medio_acceso=1, lectora=0):
             if medio_acceso == 11:
                 tipo_acceso = 6
 
-            # Tipo 1 0 2 o 5: LLave de acceso o Reserva general con QR o Llave empleado
+            # Tipo 1 0 2 o 5: LLave de acceso o Reserva general con QR o Llave empleado o Pin 
             elif len(access_data) == 2 or medio_acceso == 2:
                 tipo_acceso = 1
 
