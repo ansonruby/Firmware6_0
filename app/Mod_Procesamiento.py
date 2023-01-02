@@ -7,31 +7,33 @@ import re
 
 def Filtro_Tipos_Acceso_Antiguos(access_code, medio_acceso=1, lectora=0):
     try:
-        access_data = re.sub("[<>]", "", access_code).split(".")
-        tipo_acceso = False
-        # Tipo 6:Dispositivos adicionales
-        if medio_acceso == 11:
-            tipo_acceso = 6
+        access_list = re.findall("<(.*?)>", access_code)
+        for access_text in access_list:
+            access_data = access_text.split(".")
+            tipo_acceso = False
+            # Tipo 6:Dispositivos adicionales
+            if medio_acceso == 11:
+                tipo_acceso = 6
 
-        # Tipo 1 0 2 o 5: LLave de acceso o Reserva general con QR o Llave empleado
-        elif len(access_data) == 2 or medio_acceso == 2:
-            tipo_acceso = 1
+            # Tipo 1 0 2 o 5: LLave de acceso o Reserva general con QR o Llave empleado
+            elif len(access_data) == 2 or medio_acceso == 2:
+                tipo_acceso = 1
 
-        # Tipo 3: Invitacion de unico uso
-        elif len(access_data) == 5 and access_data[0] == "3":
-            tipo_acceso = 3
+            # Tipo 3: Invitacion de unico uso
+            elif len(access_data) == 5 and access_data[0] == "3":
+                tipo_acceso = 3
 
-        # Tipo 4: Invitacion de multipes uso
-        elif len(access_data) == 5:
-            tipo_acceso = 4
-        if tipo_acceso:
-            Validar_Acceso_Antiguos(access_data, tipo_acceso, medio_acceso, lectora)
-        else:
-            print "Invalid data of access"
+            # Tipo 4: Invitacion de multipes uso
+            elif len(access_data) == 5:
+                tipo_acceso = 4
+            if tipo_acceso:
+                Validar_Acceso_Antiguos(
+                    access_data, tipo_acceso, medio_acceso, lectora)
+            else:
+                print "Invalid data of access"
 
     except Exception as e:
         print e
-
 
 
 def Recibir_Codigo_Accesso():

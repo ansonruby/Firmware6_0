@@ -1,5 +1,6 @@
 from lib.Lib_File import Get_File
 from lib.Lib_Rout import *
+import json
 
 
 def Validar_Acceso_Antiguos(*args):
@@ -8,11 +9,57 @@ def Validar_Acceso_Antiguos(*args):
     if medio_acceso == 1:
         ans = Validar_QR_Antiguo(*args)
     elif medio_acceso == 2:
+        ans = Validar_PIN_Antiguo(*args)
+    elif medio_acceso == 11:
         ans = Validar_NFC_Antiguo(*args)
     print ans
 
 
 def Validar_QR_Antiguo(access_data, tipo_acceso, medio_acceso, lectora):
+    access_valido = False
+    access_key = False
+    if tipo_acceso == 1:
+        access_key = access_data[1]
+        db = Get_File(S0+TAB_USER_TIPO_1).strip().split("\n")
+        for access_db in db:
+            if access_data == "":
+                continue
+
+            key_db = access_db.split(".")[0]
+            if access_key == key_db:
+                access_valido = True
+                break
+    elif tipo_acceso == 3:
+        access_key = ".".join(access_data[0:3])
+        db = Get_File(S0+TAB_USER_TIPO_3).strip().split("\n")
+        for access_db in db:
+            if access_data == "":
+                continue
+            key_db = ".".join(access_db.split(".")[0:3])
+            if access_key == key_db:
+                access_key = False
+                access_valido = True
+                break
+    elif tipo_acceso == 4:
+        access_key = ".".join(access_data[1:5])
+        db = Get_File(S0+TAB_USER_TIPO_4).strip().split("\n")
+        for access_db in db:
+            if access_data == "":
+                continue
+            key_db = ".".join(access_db.split(".")[1:5])
+            if access_key == key_db:
+                access_valido = True
+                break
+
+    respuesta_acceso = "Access denied"
+    if access_valido:
+        direction = Definir_Direccion(access_key)
+        respuesta_acceso = "Access granted-E" if direction == "0" else "Access granted-S"
+
+    return respuesta_acceso
+
+
+def Validar_PIN_Antiguo(access_data, tipo_acceso, medio_acceso, lectora):
     ans = False
     if tipo_acceso == 1:
         db = Get_File(S0+TAB_USER_TIPO_1).strip().split("\n")
@@ -31,59 +78,49 @@ def Validar_QR_Antiguo(access_data, tipo_acceso, medio_acceso, lectora):
 
 
 def Validar_NFC_Antiguo(access_data, tipo_acceso, medio_acceso, lectora):
+    access_valido = False
+    access_key = False
     ans = False
-    if tipo_acceso == 1:
-        db = Get_File(S0+TAB_USER_TIPO_1).strip().split("\n")
-        ans = db
-    elif tipo_acceso == 3:
-        db = Get_File(S0+TAB_USER_TIPO_3).strip().split("\n")
-        ans = db
-    elif tipo_acceso == 4:
-        # to do
-        pass
+    if tipo_acceso == 6:
+        access_key = ".".join(access_data[1:5])
+        db = Get_File(S0+TAB_USER_TIPO_4).strip().split("\n")
+        for access_db in db:
+            if access_data == "":
+                continue
+            key_db = ".".join(access_db.split(".")[1:5])
+            if access_key == key_db:
+                access_valido = True
+                break
+    respuesta_acceso = "Access denied"
+    if access_valido:
+        direction = Definir_Direccion(access_key)
+        respuesta_acceso = "Access granted-E" if direction == "0" else "Access granted-S"
 
-    if not ans:
-        ans = "Access denied"
-
-    return ans
+    return respuesta_acceso
 
 
-def Validar_NFC_Antiguo(access_data, tipo_acceso, medio_acceso, lectora):
-    ans = False
-    if tipo_acceso == 1:
-        db = Get_File(S0+TAB_USER_TIPO_1).strip().split("\n")
-        ans = db
-    elif tipo_acceso == 3:
-        db = Get_File(S0+TAB_USER_TIPO_3).strip().split("\n")
-        ans = db
-    elif tipo_acceso == 4:
-        # to do
-        pass
+def Definir_Direccion(access_key):
+    direction = "0"
 
-    if not ans:
-        ans = "Access denied"
+    if access_key and access_key != "":
+        users_in = ""
+        with open(S0+TAB_USER_IN, 'r') as df:
+            users_in = df.read().strip()
+            df.close()
+        try:
+            users_in_json = json.loads(users_in)
+        except Exception as e:
+            users_in_json = {}
 
-    return ans
+        if access_key in users_in_json:
+            direction = "1"
+            users_in_json.pop(access_key)
+        else:
+            users_in_json[access_key] = "1"
+        users_in = json.dumps(users_in_json, indent=2)
 
-# def auth_petition(access_data, ws, direction="0"):
-#     try:
-#         qr_list = []
-#         data = qr.split(".")
-#         ans = False
-#         access_identifier = "1"
-#         with open(QR_LIST_PATH, 'r', encoding='utf-8', errors='replace') as df:
-#             qr_list_text = df.read().strip()
-#             df.close()
-#             qr_list = qr_list_text.split("\n")
-#         for compare_qr in qr_list:
-#             if compare_qr == "":
-#                 continue
+        with open(S0+TAB_USER_IN, 'w') as dfw:
+            dfw.write(users_in)
+            dfw.close()
 
-#     except Exception as e:
-#         pass
-
-# def save_authorization():
-#     with open(AUTH_LIST_PATH, 'a', encoding='utf-8', errors='replace') as dfw:
-#         dfw.write(qr+"."+str(int(time.time()*1000.0)) +
-#                   "."+access_identifier+"."+direction+".1."+str(ws.server_id)+"\n")
-#         dfw.close()
+    return direction
