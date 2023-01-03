@@ -33,9 +33,8 @@ def Filtro_Tipos_QR_Antiguo(access_code, medio_acceso=1, lectora=0):
 def Filtro_Tipos_Acceso(access_code, medio_acceso=1, lectora=0):
     try:
         tipo_acceso = False
-
-        # Tipos 1, 2, 3, 4, 5 Antiguos: Qr antiguo
-        if re.match("<(.*?)>", access_code):
+        # Validaciones QR Antiguo
+        if re.search("<(.*?)>", access_code):
             Filtro_Tipos_QR_Antiguo(access_code, medio_acceso, lectora)
             return True
 
@@ -43,8 +42,16 @@ def Filtro_Tipos_Acceso(access_code, medio_acceso=1, lectora=0):
         elif medio_acceso == 11:
             tipo_acceso = 6
 
-        # Tipo 1, 2, 5: LLave de acceso o Reserva general con QR o Llave empleado o Pin
-        elif False or medio_acceso == 2:
+        # Tipos [1-5]: QR
+        elif medio_acceso == 1 and re.search("AA(.*?)AA", access_code):
+            filter_access_code = re.findall("AA(.*?)AA", access_code)
+            if len(filter_access_code) > 0:
+                filter_access_code = filter_access_code[0]
+                tipo_acceso = int(filter_access_code[0])
+                access_code = filter_access_code[1:]
+
+        # Tipo 1 pin: Pin (temporalmente se evalua como tipo 1)
+        elif medio_acceso == 2:
             tipo_acceso = 1
 
         if tipo_acceso:
