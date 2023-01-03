@@ -4,16 +4,21 @@ from lib.Fun_Tipo_NFC import MD5
 import json
 
 
-
 def Validar_Acceso(access_data, tipo_acceso, medio_acceso, lectora):
-    ans = False
+    key_db = False
     if medio_acceso == 1:
-        ans = Validar_QR_Antiguo(access_data, tipo_acceso)
+        key_db = Validar_QR_Antiguo(access_data, tipo_acceso)
     elif medio_acceso == 2:
-        ans = Validar_PIN(access_data, tipo_acceso)
+        key_db = Validar_PIN(access_data, tipo_acceso)
     elif medio_acceso == 11:
-        ans = Validar_NFC(access_data, tipo_acceso)
-    print ans
+        key_db = Validar_NFC(access_data, tipo_acceso)
+
+    respuesta_acceso = "Access denied"
+    if key_db:
+        direction = Definir_Direccion(key_db)
+        respuesta_acceso = "Access granted-E" if direction == "0" else "Access granted-S"
+
+    print respuesta_acceso
 
 
 def Validar_QR_Antiguo(access_data, tipo_acceso, medio_acceso, lectora):
@@ -54,11 +59,10 @@ def Validar_QR_Antiguo(access_data, tipo_acceso, medio_acceso, lectora):
 
     respuesta_acceso = "Access denied"
     if access_valido:
-        direction = Definir_Direccion(access_key)
+        direction = Definir_Direccion(key_db)
         respuesta_acceso = "Access granted-E" if direction == "0" else "Access granted-S"
 
     print respuesta_acceso
-
 
 
 def Validar_PIN(access_data, tipo_acceso):
@@ -74,12 +78,9 @@ def Validar_PIN(access_data, tipo_acceso):
             if access_key == encrypted_pin:
                 access_valido = True
                 break
-    respuesta_acceso = "Access denied"
-    if access_valido:
-        direction = Definir_Direccion(key_db)
-        respuesta_acceso = "Access granted-E" if direction == "0" else "Access granted-S"
 
-    return respuesta_acceso
+    if access_valido:
+        return key_db
 
 
 def Validar_NFC(access_data, tipo_acceso):
@@ -95,12 +96,9 @@ def Validar_NFC(access_data, tipo_acceso):
             if access_key == encrypted_pin:
                 access_valido = True
                 break
-    respuesta_acceso = "Access denied"
+            
     if access_valido:
-        direction = Definir_Direccion(key_db)
-        respuesta_acceso = "Access granted-E" if direction == "0" else "Access granted-S"
-
-    return respuesta_acceso
+        return key_db
 
 
 def Definir_Direccion(access_key):
