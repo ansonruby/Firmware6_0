@@ -4,15 +4,15 @@ from lib.Fun_Tipo_NFC import MD5
 import json
 
 
-def Validar_Acceso_Antiguos(*args):
-    medio_acceso = args[2]
+
+def Validar_Acceso(access_data, tipo_acceso, medio_acceso, lectora):
     ans = False
     if medio_acceso == 1:
-        ans = Validar_QR_Antiguo(*args)
+        ans = Validar_QR_Antiguo(access_data, tipo_acceso)
     elif medio_acceso == 2:
-        ans = Validar_PIN_Antiguo(*args)
+        ans = Validar_PIN(access_data, tipo_acceso)
     elif medio_acceso == 11:
-        ans = Validar_NFC_Antiguo(*args)
+        ans = Validar_NFC(access_data, tipo_acceso)
     print ans
 
 
@@ -57,17 +57,18 @@ def Validar_QR_Antiguo(access_data, tipo_acceso, medio_acceso, lectora):
         direction = Definir_Direccion(access_key)
         respuesta_acceso = "Access granted-E" if direction == "0" else "Access granted-S"
 
-    return respuesta_acceso
+    print respuesta_acceso
 
 
-def Validar_PIN_Antiguo(access_data, tipo_acceso, medio_acceso, lectora):
+
+def Validar_PIN(access_data, tipo_acceso):
     access_valido = False
     access_key = False
     if tipo_acceso == 1:
-        access_key = MD5(access_data[0])
+        access_key = MD5(access_data)
         db = Get_File(S0+TAB_USER_TIPO_1).strip().split("\n")
         for access_db in db:
-            if access_data == "":
+            if access_db == "":
                 continue
             key_db, encrypted_pin = access_db.split(".")
             if access_key == encrypted_pin:
@@ -81,14 +82,14 @@ def Validar_PIN_Antiguo(access_data, tipo_acceso, medio_acceso, lectora):
     return respuesta_acceso
 
 
-def Validar_NFC_Antiguo(access_data, tipo_acceso, medio_acceso, lectora):
+def Validar_NFC(access_data, tipo_acceso):
     access_valido = False
     access_key = False
     if tipo_acceso == 6:
-        access_key = MD5(access_data[0])
+        access_key = MD5(access_data)
         db = Get_File(S0+TAB_USER_TIPO_6).strip().split("\n")
         for access_db in db:
-            if access_data == "":
+            if access_db == "":
                 continue
             key_db, encrypted_pin = access_db.split(".")
             if access_key == encrypted_pin:
