@@ -18,33 +18,6 @@ def Validar_Acceso(access_code, tipo_acceso, medio_acceso, lectora):
     elif medio_acceso == 11:
         user_id = Validar_NFC(access_code, tipo_acceso)
 
-    respuesta_acceso = "Access denied"
-    if user_id:
-        direction = "0"
-
-        if tipo_acceso != 3:
-            # Cambiar el id en la tabla autorizados para invitaciones multiples usos
-            if tipo_acceso == 4:
-                direction = Definir_Direccion(
-                    str(tipo_acceso)+"."+str(user_id))
-            else:
-                direction = Definir_Direccion(str(user_id))
-
-        respuesta_acceso = "Access granted-E" if direction == "0" else "Access granted-S"
-        read_time = int(time.time()*1000)
-        athorization_code = str(user_id) + "."+str(read_time) + \
-            "."+str(tipo_acceso) + "."+direction+"."+"1"
-        Add_Line_End(S0+TAB_ENV_SERVER, athorization_code+"\n")
-
-    comand_res = [
-        COM_RES,
-        COM_RES_S1,
-        COM_RES_S2
-    ]
-
-    # Envio modulo respuesta
-    Set_File(S0+comand_res[lectora], respuesta_acceso)
-
 
 def Validar_QR_Antiguo(access_data, tipo_acceso, medio_acceso, lectora):
     valid_access = False
@@ -217,3 +190,32 @@ def Definir_Direccion(access_key):
             dfw.close()
 
     return direction
+
+
+def Enviar_Respesta(user_id, tipo_acceso,medio_acceso, lectora):
+    respuesta_acceso = "Access denied"
+    if user_id:
+        direction = "0"
+
+        if tipo_acceso != 3:
+            # Cambiar el id en la tabla autorizados para invitaciones multiples usos
+            if tipo_acceso == 4:
+                direction = Definir_Direccion(
+                    str(tipo_acceso)+"."+str(user_id))
+            else:
+                direction = Definir_Direccion(str(user_id))
+
+        respuesta_acceso = "Access granted-E" if direction == "0" else "Access granted-S"
+        read_time = int(time.time()*1000)
+        athorization_code = str(user_id) + "."+str(read_time) + \
+            "."+str(medio_acceso) + "."+direction+"."+"1"
+        Add_Line_End(S0+TAB_ENV_SERVER, athorization_code+"\n")
+
+    comand_res = [
+        COM_RES,
+        COM_RES_S1,
+        COM_RES_S2
+    ]
+
+    # Envio modulo respuesta
+    Set_File(S0+comand_res[lectora], respuesta_acceso)
