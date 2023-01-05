@@ -270,7 +270,7 @@ COM_RES_S2            = COMMA + 'Mod_Respuesta/Com_Res_S2.txt'
 #                                   Temporal: Nuevos QRS
 #---------------------------------------------------------------------------------------
 
-NEW_DATA                = 'NewData/'                                                       # Ruta      Base de datos
+NEW_DATA                = DATA + 'NewData/'                                                       # Ruta      Base de datos
 NEW_TAB_USER_TIPO_1     = NEW_DATA + 'Tipo_1.txt'                     # Usuarios del servidor o counter
 NEW_TAB_USER_TIPO_2     = NEW_DATA + 'Tipo_2.txt'                     # Usuarios del servidor o counter
 NEW_TAB_USER_TIPO_3     = NEW_DATA + 'Tipo_3.txt'                     # Usuarios del servidor o counter

@@ -3,6 +3,7 @@ from lib.Lib_Rout import *
 from lib.Lib_Threads import Create_Thread_Daemon
 from Mod_Validacion import Validar_QR_Antiguo, Validar_Acceso
 import re
+import time
 
 
 def Filtro_Tipos_QR_Antiguo(access_code, medio_acceso=1, lectora=0):
@@ -113,4 +114,6 @@ def Recibir_Codigo_Accesso():
         Clear_File(S0+STATUS_NFC_S2)
 
 
-Recibir_Codigo_Accesso()
+while True:
+    time.sleep(0.05)
+    Recibir_Codigo_Accesso()

@@ -1,6 +1,7 @@
 from lib.Lib_Rout import *
-from lib.Lib_File import Get_File, Clear_Line
+from lib.Lib_File import Get_File, Clear_Line, Set_File, Add_Line_End
 from lib.Fun_Tipo_NFC import MD5
+from lib.Lib_Binary_Search import Binary_Search_Id, Binary_Remove_Id
 import json
 import re
 import time
@@ -9,6 +10,7 @@ import datetime
 
 def Validar_Acceso(access_code, tipo_acceso, medio_acceso, lectora):
     user_id = False
+
     if medio_acceso == 1:
         user_id = Validar_QR(access_code, tipo_acceso)
     elif medio_acceso == 2:
@@ -18,10 +20,30 @@ def Validar_Acceso(access_code, tipo_acceso, medio_acceso, lectora):
 
     respuesta_acceso = "Access denied"
     if user_id:
-        direction = Definir_Direccion(user_id)
-        respuesta_acceso = "Access granted-E" if direction == "0" else "Access granted-S"
+        direction = "0"
 
-    print respuesta_acceso
+        if tipo_acceso != 3:
+            # Cambiar el id en la tabla autorizados para invitaciones multiples usos
+            if tipo_acceso == 4:
+                direction = Definir_Direccion(
+                    str(tipo_acceso)+"."+str(user_id))
+            else:
+                direction = Definir_Direccion(str(user_id))
+
+        respuesta_acceso = "Access granted-E" if direction == "0" else "Access granted-S"
+        read_time = int(time.time()*1000)
+        athorization_code = str(user_id) + "."+str(read_time) + \
+            "."+str(tipo_acceso) + "."+direction+"."+"1"
+        Add_Line_End(S0+TAB_ENV_SERVER, athorization_code+"\n")
+
+    comand_res = [
+        COM_RES,
+        COM_RES_S1,
+        COM_RES_S2
+    ]
+
+    # Envio modulo respuesta
+    Set_File(S0+comand_res[lectora], respuesta_acceso)
 
 
 def Validar_QR_Antiguo(access_data, tipo_acceso, medio_acceso, lectora):
@@ -65,10 +87,25 @@ def Validar_QR_Antiguo(access_data, tipo_acceso, medio_acceso, lectora):
 
     respuesta_acceso = "Access denied"
     if valid_access:
-        direction = Definir_Direccion(key_db)
-        respuesta_acceso = "Access granted-E" if direction == "0" else "Access granted-S"
+        direction = "0"
 
-    print respuesta_acceso
+        if tipo_acceso != 3:
+            direction = Definir_Direccion(key_db)
+
+        respuesta_acceso = "Access granted-E" if direction == "0" else "Access granted-S"
+        read_time = int(time.time()*1000)
+        athorization_code = ".".join(access_data) + "."+str(read_time) + \
+            "."+str(tipo_acceso) + "."+direction+"."+"1"
+        Add_Line_End(S0+TAB_ENV_SERVER, athorization_code+"\n")
+
+    comand_res = [
+        COM_RES,
+        COM_RES_S1,
+        COM_RES_S2
+    ]
+
+    # Envio modulo respuesta
+    Set_File(S0+comand_res[lectora], respuesta_acceso)
 
 
 def Validar_QR(access_code, tipo_acceso):
@@ -92,15 +129,13 @@ def Validar_QR(access_code, tipo_acceso):
 
         # Tiempo de lectura excedido
         time_diff = read_time-qr_time
-        if time_diff < 0 or time_diff > 8000:
+        if time_diff <= 0 or time_diff > 8000:
             return False
 
         # Dia de la semana incorrecto => F0 - FF (Lunes a domingo)
         weekdays = ["F0", "FA", "FB", "FC", "FD", "FE", "FF"]
         if weekdays[datetime.datetime.today().weekday()] != separator:
             return False
-
-    valid_access = False
 
     tabs_users = [
         NEW_TAB_USER_TIPO_1,
@@ -110,21 +145,15 @@ def Validar_QR(access_code, tipo_acceso):
         NEW_TAB_USER_TIPO_5
     ]
 
-    db = Get_File(S0+tabs_users[tipo_acceso-1]).split("\n")
-    for i, access_db in enumerate(db):
-        if access_db == "":
-            continue
-        if user_id == int(access_db):
-            valid_access = True
+    file_db = S0+tabs_users[tipo_acceso-1]
+    access_index = False
+    if tipo_acceso == 3:
+        access_index = Binary_Remove_Id(file_db, user_id)
+    else:
+        access_index = Binary_Search_Id(file_db, user_id)
 
-            # borrado de acceso para qrs estaticos
-            if tipo_acceso == 3:
-                Clear_Line(S0+tabs_users[tipo_acceso-1], i+1)
-
-            break
-
-    if valid_access:
-        return user_id
+    if access_index:
+        return str(user_id)
 
 
 def Validar_PIN(access_code, tipo_acceso):
