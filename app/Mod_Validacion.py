@@ -17,6 +17,7 @@ def Validar_Acceso(access_code, tipo_acceso, medio_acceso, lectora):
         user_id = Validar_PIN(access_code, tipo_acceso)
     elif medio_acceso == 11:
         user_id = Validar_NFC(access_code, tipo_acceso)
+    Enviar_Respuesta(user_id, tipo_acceso, medio_acceso, lectora)
 
 
 def Validar_QR_Antiguo(access_data, tipo_acceso, medio_acceso, lectora):
@@ -68,7 +69,7 @@ def Validar_QR_Antiguo(access_data, tipo_acceso, medio_acceso, lectora):
         respuesta_acceso = "Access granted-E" if direction == "0" else "Access granted-S"
         read_time = int(time.time()*1000)
         athorization_code = ".".join(access_data) + "."+str(read_time) + \
-            "."+str(tipo_acceso) + "."+direction+"."+"1"
+            "."+str(medio_acceso) + "."+direction+"."+"1"
         Add_Line_End(S0+TAB_ENV_SERVER, athorization_code+"\n")
 
     comand_res = [
@@ -192,7 +193,7 @@ def Definir_Direccion(access_key):
     return direction
 
 
-def Enviar_Respesta(user_id, tipo_acceso,medio_acceso, lectora):
+def Enviar_Respuesta(user_id, tipo_acceso, medio_acceso, lectora):
     respuesta_acceso = "Access denied"
     if user_id:
         direction = "0"
