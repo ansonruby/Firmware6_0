@@ -1,5 +1,4 @@
 import requests
-import json
 
 petition_time_out = 60 * 60
 
