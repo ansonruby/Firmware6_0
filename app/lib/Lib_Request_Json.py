@@ -61,11 +61,11 @@ def Get_Rout_server():
                 '1111': 'https://' + IP_Ser}
 
     # return 'https://solutions.fusepong.com'
-    return 'http://192.168.0.46:3000'
+    return 'http://192.168.0.103:3000'
     # return opciones[mejor_opcion]
 
 
-print send_petition("get_users")
-print send_petition("/api/access/get_granted_users_pi")
-print send_petition("http://localhost:3000/api/access/get_granted_users_pi")
-print send_petition("grant", method="POST", data={"data": "a1b2"})
+# print send_petition("get_users")
+# print send_petition("/api/access/get_granted_users_pi")
+# print send_petition("http://localhost:3000/api/access/get_granted_users_pi")
+# print send_petition("grant", method="POST", data={"data": "a1b2"})

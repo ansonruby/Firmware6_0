@@ -2,6 +2,7 @@ from lib.Lib_Rout import *
 from lib.Lib_File import Get_File, Clear_Line, Set_File, Add_Line_End
 from lib.Fun_Tipo_NFC import MD5
 from lib.Lib_Binary_Search import Binary_Search_Id, Binary_Remove_Id
+from lib.Lib_Request_Json import send_petition
 import json
 import re
 import time
@@ -17,7 +18,10 @@ def Validar_Acceso(access_code, tipo_acceso, medio_acceso, lectora):
         user_id = Validar_PIN(access_code, tipo_acceso)
     elif medio_acceso == 11:
         user_id = Validar_NFC(access_code, tipo_acceso)
-    Enviar_Respuesta(user_id, tipo_acceso, medio_acceso, lectora)
+    if user_id:
+        Enviar_Respuesta(user_id, tipo_acceso, medio_acceso, lectora)
+    else:
+        Respaldo_Online(access_code, lectora)
 
 
 def Validar_QR_Antiguo(access_data, tipo_acceso, medio_acceso, lectora):
@@ -71,15 +75,16 @@ def Validar_QR_Antiguo(access_data, tipo_acceso, medio_acceso, lectora):
         athorization_code = ".".join(access_data) + "."+str(read_time) + \
             "."+str(medio_acceso) + "."+direction+"."+"1"
         Add_Line_End(S0+TAB_ENV_SERVER, athorization_code+"\n")
+        comand_res = [
+            COM_RES,
+            COM_RES_S1,
+            COM_RES_S2
+        ]
 
-    comand_res = [
-        COM_RES,
-        COM_RES_S1,
-        COM_RES_S2
-    ]
-
-    # Envio modulo respuesta
-    Set_File(S0+comand_res[lectora], respuesta_acceso)
+        # Envio modulo respuesta
+        Set_File(S0+comand_res[lectora], respuesta_acceso)
+    else:
+        Respaldo_Online("<" + ".".join(access_data) + ">", lectora)
 
 
 def Validar_QR(access_code, tipo_acceso):
@@ -211,6 +216,25 @@ def Enviar_Respuesta(user_id, tipo_acceso, medio_acceso, lectora):
         athorization_code = str(user_id) + "."+str(read_time) + \
             "."+str(medio_acceso) + "."+direction+"."+"1"
         Add_Line_End(S0+TAB_ENV_SERVER, athorization_code+"\n")
+
+    comand_res = [
+        COM_RES,
+        COM_RES_S1,
+        COM_RES_S2
+    ]
+
+    # Envio modulo respuesta
+    Set_File(S0+comand_res[lectora], respuesta_acceso)
+
+
+def Respaldo_Online(access_code, lectora):
+    respuesta_acceso = "Access denied"
+
+    respuesta_server = send_petition(
+        "grant", data={"data": access_code})
+
+    if respuesta_server:
+        respuesta_acceso = respuesta_server
 
     comand_res = [
         COM_RES,
