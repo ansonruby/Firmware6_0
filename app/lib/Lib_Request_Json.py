@@ -1,11 +1,13 @@
-from Lib_File import *            # importar con los mismos nombres
 from Lib_Rout import *
+from Lib_File import Get_File
+from Fun_Dispositivo import Get_ID_Dispositivo
 import requests
+import time
 
 petition_time_out = 60 * 60
 
 fixed_urls = {
-    "get_users": "/api/access/get_granted_users_pi",
+    "get_users": "/api/app/scan_devices/get_granted_accesess_hub",
     "grant": "/api/access/grant",
     "1": "/api/access/keyboard_access",
     "2": "/api/access/set_in_out_activity",
@@ -17,7 +19,9 @@ fixed_urls = {
 # method can be GET, OPTIONS, HEAD, POST, PUT, PATCH, or DELETE
 
 
-def send_petition(url, method="GET", params=None, data=None, json_data=None, headers=None, timeout=petition_time_out):
+def send_petition(url, method="GET", params=None, data={}, json_data={}, headers={}, timeout=petition_time_out):
+    hub_headers = {"FUSEACCESS_ID": Get_ID_Dispositivo(),
+                   "TIME_SCAN": str(int(time.time()*1000))}
     response = None
     petition_url = url
     if url in fixed_urls:
@@ -27,14 +31,14 @@ def send_petition(url, method="GET", params=None, data=None, json_data=None, hea
 
     try:
         response = requests.request(method, petition_url, params=params, data=data,
-                                    json=json_data, headers=headers, timeout=timeout)
+                                    json=json_data, headers=dict(hub_headers.items()+headers.items()), timeout=timeout)
         return response.json()
-    except (TypeError, ValueError):
+    except (TypeError, ValueError) as e:
         if response:
             return response.text
         else:
             return False
-    except:
+    except Exception as e:
         return False
 
 
@@ -61,7 +65,7 @@ def Get_Rout_server():
                 '1111': 'https://' + IP_Ser}
 
     # return 'https://solutions.fusepong.com'
-    return 'http://192.168.0.103:3000'
+    return 'http://192.168.0.46:3000'
     # return opciones[mejor_opcion]
 
 
