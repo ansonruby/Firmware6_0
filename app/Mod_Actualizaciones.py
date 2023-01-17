@@ -100,8 +100,9 @@ def Hora_Actualizacion_Usuarios(Hora_Actualizacion):
         Data_sen = send_petition("get_users")
         print Data_sen
         #Data_sen = Data_simulada
-        x_json = json.loads(Data_sen)
-        Sort_data(x_json)
+        if Data_sen != False:
+            x_json = json.loads(Data_sen)
+            Sort_data(x_json)
 
 def Periodo_Actualizacion_Usuarios(Periodo):
     global T_Antes
@@ -112,10 +113,11 @@ def Periodo_Actualizacion_Usuarios(Periodo):
     if T_transcurido >= Periodo :
         print 'Actualizando Usuarios por periodo'
         T_Antes = T_Antes = time.time()
-        #Data_sen = send_petition("get_users")
-        Data_sen = Data_simulada
-        x_json = json.loads(Data_sen)
-        Sort_data(x_json)
+        Data_sen = send_petition("get_users")
+        #Data_sen = Data_simulada
+        if Data_sen != False:
+            x_json = json.loads(Data_sen)
+            Sort_data(x_json)
 
 
 """
@@ -135,14 +137,15 @@ def Periodo_Actualizacion_Usuarios(Periodo):
             "Tipo_4": []
         }
     }
-        
+
 #Data_simulada ='{"S0":{"Tipo_1":"1,2,3","Tipo_2":"1.123132.1231234,2.123132.1231234,3.123132.1231234"}}'
 Data_simulada ='{"S0":{"Tipo_1":"1,2,3","Tipo_2":"1.123132.1231234,2.123132.1231234,3.123132.1231234","Tipo_3":"","Tipo_4":""},"S1":{"Tipo_1":"1,2,3","Tipo_2":"1.123132.1231234,2.123132.1231234,3.123132.1231234","Tipo_3":"","Tipo_4":""}}'
+"""
 
 print Hora_Actual()
 
 
-
+"""
 while 1:
 	#---------------------------------------------------------
 	#  Proceso 1: Tiempo de espera para disminuir proceso
@@ -151,7 +154,7 @@ while 1:
 	#---------------------------------------------------------
 	# Proceso 2: Actualizar base de datos en una hora determinada ("12:10 AM") # 12:00 AM     03:59 PM # hora chile  10:00 PM 12:10 AM
 	#---------------------------------------------------------
-	Hora_Actualizacion_Usuarios("01:10 PM")
+	Hora_Actualizacion_Usuarios("06:18 PM")
     #---------------------------------------------------------
 	# Proceso 3: Actualizar base de datos por periodos de tiempos minimo 1 segundo,  60*1 ->1 minuto
 	#---------------------------------------------------------
@@ -159,9 +162,15 @@ while 1:
 	#---------------------------------------------------------
 	#  Proceso 4:Enviar usuarios a servidor si hay y si esta en la funcion
 	#---------------------------------------------------------
-
-
+    accelworld
 """
+print S0+NEW_AUTO_USER_TIPO_1
+Autorizaciones = Get_File(S0+NEW_AUTO_USER_TIPO_1)
+print len(Autorizaciones)
+Autorizaciones = Get_File(S0+NEW_AUTO_USER_TIPO_2)
+print len(Autorizaciones)
+Autorizaciones = Get_File(S0+NEW_AUTO_USER_TIPO_3)
+print len(Autorizaciones)
 
 
 
