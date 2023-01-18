@@ -36,6 +36,7 @@ from lib.Fun_Dispositivo import *   #
 
 #BKDB                = FIRM +'db/HUB/BKdb/'
 T_Antes =time.time()
+T_Antes_send_autorizations=time.time()
 
 def Create_Set_File(arch, Text):
     archivo = open(arch, "w")
@@ -98,11 +99,11 @@ def Hora_Actualizacion_Usuarios(Hora_Actualizacion):
             #if PSP_Mensajes:
         print 'Actualizando Usuarios'
         Data_sen = send_petition("get_users")
-        print Data_sen
         #Data_sen = Data_simulada
-        if Data_sen != False:
-            x_json = json.loads(Data_sen)
-            Sort_data(x_json)
+        if Data_sen != False and Data_sen.ok:
+            #x_json = json.loads(Data_sen)
+            #print Data_sen.json()
+            Sort_data(Data_sen.json())
 
 def Periodo_Actualizacion_Usuarios(Periodo):
     global T_Antes
@@ -115,9 +116,110 @@ def Periodo_Actualizacion_Usuarios(Periodo):
         T_Antes = T_Antes = time.time()
         Data_sen = send_petition("get_users")
         #Data_sen = Data_simulada
-        if Data_sen != False:
-            x_json = json.loads(Data_sen)
-            Sort_data(x_json)
+        if Data_sen != False and Data_sen.ok:
+            #x_json = json.loads(Data_sen)
+            Sort_data(Data_sen.json())
+
+def send_autorizations():
+    Status_Autorisados=0
+    Data_Autorizados ={}
+    Data_Location={}
+    for Location in range(3):
+        Ruta = os.path.join(FIRM,'db','S'+str(Location))
+        if os.path.exists(Ruta) == True:
+            Data_Autorizados ={}
+            for Tipo in range(1,7):
+                Archivo = 'Tipo_'+str(Tipo)
+                Ruta = os.path.join(FIRM,'db','S'+str(Location),DATA,'Autorizaciones',Archivo +'.txt')
+                if os.path.exists(Ruta) == True:
+                    Ev = Get_File(Ruta)
+                    if len(Ev) >=2:
+                        Ev =Ev.split('\n')[:-1]
+                        Status_Autorisados=1
+                    else:           Ev = []
+                else:   Ev = []
+                Data_Autorizados[Archivo]=Ev
+            Data_Location['S'+str(Location)] = Data_Autorizados
+            #print Data_Autorizados
+    if Status_Autorisados == 1:
+        #print Data_Location
+        repuesta= send_petition("send_autorizations", method="POST", json_data= Data_Location)
+        if repuesta.ok :
+            print 'se resivieron los datos eliminado'
+            for Location in range(3):
+                Ruta = os.path.join(FIRM,'db','S'+str(Location))
+                if os.path.exists(Ruta) == True:
+                    for Tipo in range(1,7):
+                        Archivo = 'Tipo_'+str(Tipo)
+                        Ruta = os.path.join(FIRM,'db','S'+str(Location),DATA,'Autorizaciones',Archivo +'.txt')
+                        if os.path.exists(Ruta) == True: Clear_File(Ruta)
+        else:
+            print 'nuevo intento'
+
+    else:                       print 'NO hay datos'
+
+
+def Periodo_send_autorizations(Periodo):
+    global T_Antes_send_autorizations
+    global Data_simulada
+    T_Actual = time.time()
+    T_transcurido = int(T_Actual-T_Antes_send_autorizations)
+    #print 'T_Diferencia: ' + str(T_transcurido)
+    if T_transcurido >= Periodo :
+        print 'Periodo_send_autorizations'
+        T_Antes_send_autorizations = time.time()
+        Data_sen = send_petition("get_users")
+        send_autorizations()
+
+
+
+print Hora_Actual()
+
+
+
+
+while 1:
+    #---------------------------------------------------------
+    #  Proceso 1: Tiempo de espera para disminuir proceso
+    #---------------------------------------------------------
+    time.sleep(2) #minimo 1
+    #---------------------------------------------------------
+    # Proceso 2: Actualizar base de datos en una hora determinada ("12:10 AM") # 12:00 AM     03:59 PM # hora chile  10:00 PM 12:10 AM
+    #---------------------------------------------------------
+    Hora_Actualizacion_Usuarios("05:38 PM")
+    #---------------------------------------------------------
+    # Proceso 3: Actualizar base de datos por periodos de tiempos minimo 1 segundo,  60*1 ->1 minuto
+    #---------------------------------------------------------
+    #Periodo_Actualizacion_Usuarios(60*2)
+    #---------------------------------------------------------
+    #  Proceso 4:Enviar usuarios a servidor periodicamente si hay
+    #---------------------------------------------------------
+    Periodo_send_autorizations(6)
+
+
+
+
+
+#send_autorizations()
+
+
+
+#-------------------------------------
+# pruebas de uso
+#-------------------------------------
+
+#Data_sen = send_petition("get_users")
+#print Data_sen
+#Sort_data(Data_sen)
+#x_json = json.loads(Data_simulada)
+#Sort_data(x_json)
+
+#x_json = json.loads(Data_Location)
+#print x_json["S0"]["Tipo_1"]
+
+#jsonString = json.dumps(Ev)
+#print jsonString
+#Autorizaciones = Get_File(S0+NEW_AUTO_USER_TIPO_1)
 
 
 """
@@ -140,216 +242,4 @@ def Periodo_Actualizacion_Usuarios(Periodo):
 
 #Data_simulada ='{"S0":{"Tipo_1":"1,2,3","Tipo_2":"1.123132.1231234,2.123132.1231234,3.123132.1231234"}}'
 Data_simulada ='{"S0":{"Tipo_1":"1,2,3","Tipo_2":"1.123132.1231234,2.123132.1231234,3.123132.1231234","Tipo_3":"","Tipo_4":""},"S1":{"Tipo_1":"1,2,3","Tipo_2":"1.123132.1231234,2.123132.1231234,3.123132.1231234","Tipo_3":"","Tipo_4":""}}'
-"""
-
-print Hora_Actual()
-
-
-"""
-while 1:
-	#---------------------------------------------------------
-	#  Proceso 1: Tiempo de espera para disminuir proceso
-	#---------------------------------------------------------
-	time.sleep(2) #minimo 1
-	#---------------------------------------------------------
-	# Proceso 2: Actualizar base de datos en una hora determinada ("12:10 AM") # 12:00 AM     03:59 PM # hora chile  10:00 PM 12:10 AM
-	#---------------------------------------------------------
-	Hora_Actualizacion_Usuarios("06:18 PM")
-    #---------------------------------------------------------
-	# Proceso 3: Actualizar base de datos por periodos de tiempos minimo 1 segundo,  60*1 ->1 minuto
-	#---------------------------------------------------------
-	#Periodo_Actualizacion_Usuarios(60*2)
-	#---------------------------------------------------------
-	#  Proceso 4:Enviar usuarios a servidor si hay y si esta en la funcion
-	#---------------------------------------------------------
-    accelworld
-"""
-print S0+NEW_AUTO_USER_TIPO_1
-Autorizaciones = Get_File(S0+NEW_AUTO_USER_TIPO_1)
-print len(Autorizaciones)
-Autorizaciones = Get_File(S0+NEW_AUTO_USER_TIPO_2)
-print len(Autorizaciones)
-Autorizaciones = Get_File(S0+NEW_AUTO_USER_TIPO_3)
-print len(Autorizaciones)
-
-
-
-
-#-------------------------------------
-# pruebas de uso
-#-------------------------------------
-
-#Data_sen = send_petition("get_users")
-#print Data_sen
-#x_json = json.loads(Data_sen)
-#Sort_data(Data_sen)
-
-#x_json = json.loads(Data_simulada)
-#Sort_data(x_json)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-"""
-import datetime
-import time
-import commands
-import sys
-import socket
-import os
-
-
-#---------------------------------
-#           Librerias personales
-#---------------------------------
-
-from lib.Lib_File import *            # importar con los mismos nombres
-from lib.Lib_Rout import *            # importar con los mismos nombres
-from lib.Lib_Requests_Server import *   #
-from lib.Lib_Networks import *   #
-from lib.Fun_Dispositivo import *   #
-from lib.Fun_Server import *   #
-from lib.Fun_Tipo_QR import *   #
-
-#from lib.Verificar_Usuarios import *  # importar con los mismos nombres
-
-#-------------------------------------------------------
-# inicio de variable	--------------------------------------
-PSP_Mensajes = 1     # 0: NO print  1: Print
-#-------------------------------------------------------
-
-#-------------------------------------------------------------------------------------------------------------------------------------
-#-------------------------------------------------------------------------------------------------------------------------------------
-#                   funciones para la peticion de usuarios
-#-------------------------------------------------------------------------------------------------------------------------------------
-#-------------------------------------------------------------------------------------------------------------------------------------
-#-------------------------------------------------------
-def Hora_Actual():
-	tiempo_segundos = time.time()
-	#print(tiempo_segundos)
-	#tiempo_cadena = time.ctime(tiempo_segundos) # 1488651001.7188754 seg
-	tiempo_cadena = time.strftime("%I:%M %p")
-	#print(tiempo_cadena)
-	return tiempo_cadena
-
-
-Tiempo_Actual = str(int(time.time()*1000.0))  # Tiempo()
-Ruta            = Get_Rout_server()
-ID_Dispositivo  = Get_ID_Dispositivo()
-print ID_Dispositivo
-
-if PSP_Mensajes: print 'Ruta:' + str(Ruta.strip()) + ', UUID:' + ID_Dispositivo
-
-Respuesta = Pedir_Usuarios_Activos(Ruta.strip(),Tiempo_Actual,ID_Dispositivo)
-{u'S0': {u'T2': u'1.123132.1231234\n2.123132.1231234\n3.123132.1231234', u'T1': u'1\n2\n3'}}
-{"S0":{"T1":"1,2,3","T2":"1.123132.1231234,2.123132.1231234,3.123132.1231234"}}
-print Respuesta
-
-'
-{
-"invitations":["4.g26t3.tiempo.tiempo.4123"],
-"data":[
-"g26t3.0e26423509caa8da168651df506a3a6c",
-"g27dq.43edb9f77d3f86dfea6a6152cad1af0d",
-"g27ds.82ab4f18ef92c41f8b03221a24aeef26",
-"gq6t1.3343b732bb1de413a507c6b125159838",
-"gq6ds.a8f396ab149244c64f5908fe851b7f00",
-"gq6tc.bb6148027c89459d7f78ca3a3cc88d63",
-"6.h2.eea9648ac4adf4b1327af110632dc6cd",
-"6.h2.9bc0a6b8b29687a400fbbd97da3e8826",
-"6.h2.9da509f613bb819a8d6bae0cfb65dbe2"]}'
-
-# Medio de acceso 2:PIN
-Mod_Procesamiento
-from lib.Lib_Threads import Create_Thread_Daemon
-
-if Get_File(S0+STATUS_TECLADO) == '1':
-	Create_Thread_Daemon(Filtro_Tipos_Acceso,
-						 Get_File(S0+COM_TECLADO), 2, 0)
-	Clear_File(S0+STATUS_TECLADO)
-
-"""
-#print send_petition("http://192.168.0.46:3000/get_users")
-#print send_petition("http://localhost:3000/get_users")
-
-#users_in_json = json.loads(users_in)
-
-#b_json = '{"S0":{"T1":"1\n2\n3","T2":"1.123132.1231234\n2.123132.1231234\n3.123132.1231234"}}'
-#b_json ='{"T1":"1\n2\n3","T2":"1.123132.1231234\n2.123132.1231234\n3.123132.1231234"}'
-#users_in_json = json.loads(b_json)
-#print users_in_json["T1"]
-
-#x = '{"S0":"{"T1":"1.2.3", "T2":"1.123132.1231234,2.123132.1231234,3.123132.1231234"}"}'
-"""
-try:
-	users_in_json = json.loads(users_in)
-except Exception as e:
-	users_in_json = {}
-"""
-"""
-#-----------------------------------------------
-#-----------------------------------------------
-x_json = json.loads(x)
-#print 'anson'
-#print x_json["S0"]["T1"]
-#print x_json["S0"]["T1"]
-#T1 = x_json["S0"]["T1"]
-#s = T1.replace(',',"\n")
-#print s
-
-
-
-
-"""
-"""
-try:
-	users_T1_json = x_json["S0"]["T3"]
-except Exception as e:
-	users_T1_json = {}
-
-print users_T1_json
-
-
-
-def Pedir_Usuarios():
-
-	ID_Dispositivo  = Get_ID_Dispositivo()
-	send_petition("http://192.168.0.46:3000/get_users")
-
-
-
-
-def Actualizar_Usuarios_Desde_server():
-	global PSP_Mensajes
-	Tiempo_Actual = str(int(time.time()*1000.0))  # Tiempo()
-	#Ruta            = Get_Rout_server()
-	#ID_Dispositivo  = Get_ID_Dispositivo()
-
-	if PSP_Mensajes: print 'Ruta:' + str(Ruta.strip()) + ', UUID:' + ID_Dispositivo
-
-	Respuesta = Pedir_Usuarios_Activos(Ruta.strip(),Tiempo_Actual,ID_Dispositivo)
 """

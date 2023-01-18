@@ -9,8 +9,7 @@ petition_time_out = 60 * 60
 fixed_urls = {
     "get_users": "/api/app/scan_devices/get_granted_accesess_hub",
     "grant": "/api/access/grant",
-    "1": "/api/access/keyboard_access",
-    "2": "/api/access/set_in_out_activity",
+    "send_autorizations": "/api/access/set_in_out_activity",
     "3": "/api/access/verify_conection",
     "4": "/api/firmware/review_update",
     "5": "/api/firmware/confirm_update"
@@ -32,10 +31,10 @@ def send_petition(url, method="GET", params=None, data={}, json_data={}, headers
     try:
         response = requests.request(method, petition_url, params=params, data=data,
                                     json=json_data, headers=dict(hub_headers.items()+headers.items()), timeout=timeout)
-        return response.json()
+        return response
     except (TypeError, ValueError) as e:
         if response:
-            return response.text
+            return response
         else:
             return False
     except Exception as e:
@@ -72,4 +71,4 @@ def Get_Rout_server():
 # print send_petition("get_users")
 # print send_petition("/api/access/get_granted_users_pi")
 # print send_petition("http://localhost:3000/api/access/get_granted_users_pi")
-# print send_petition("grant", method="POST", data={"data": "a1b2"})
+# print send_petition("send_autorizations", method="POST", data={"data": "a1b2"})
