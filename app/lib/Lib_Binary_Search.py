@@ -44,7 +44,7 @@ def Binary_Search(db_list, value):
         mid_data = 0
         mid = (high + low) // 2
         try:
-            mid_data = int(db_list[mid])
+            mid_data = int(db_list[mid].split(".")[0])
         except:
             mid_data = None
         if mid_data == value:
@@ -94,16 +94,15 @@ def Binary_Add_Id(file_name, user_id):
     if not find:
         line = position+1
         try:
-            if user_id > int(Get_Line(file_name, line)):
+            if user_id.split(".")[0] > int(Get_Line(file_name, line).split(".")[0]):
                 line += 1
         except:
             pass
         data = str(user_id)
         if line <= len(db):
-            data += "\n"
-            Add_Line_Pos(file_name, line, str(user_id)+"\n")
+            Add_Line_Pos(file_name, line, data + "\n")
         else:
-            Add_Line_End(file_name,  "\n"+str(user_id))
+            Add_Line_End(file_name,  "\n"+data)
 
     return line
 # -------------------------------------------------------

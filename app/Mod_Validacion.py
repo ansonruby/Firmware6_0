@@ -1,5 +1,5 @@
 from lib.Lib_Rout import *
-from lib.Lib_File import Get_File, Clear_Line, Set_File, Add_Line_End
+from lib.Lib_File import Get_File, Clear_Line, Set_File, Add_Line_End, Get_Line
 from lib.Fun_Tipo_NFC import MD5
 from lib.Lib_Binary_Search import Binary_Search_Id, Binary_Remove_Id
 from lib.Lib_Request_Json import send_petition
@@ -10,16 +10,18 @@ import datetime
 
 
 def Validar_Acceso(access_code, tipo_acceso, medio_acceso, lectora):
-    user_id = False
-
+    valid_access=False
     if medio_acceso == 1:
-        user_id = Validar_QR(access_code, tipo_acceso)
+        valid_access = Validar_QR(access_code, tipo_acceso)
     elif medio_acceso == 2:
-        user_id = Validar_PIN(access_code, tipo_acceso)
+        valid_access = Validar_PIN(access_code, tipo_acceso)
     elif medio_acceso == 11:
-        user_id = Validar_NFC(access_code, tipo_acceso)
-    if user_id:
-        Enviar_Respuesta(user_id, tipo_acceso, medio_acceso, lectora)
+        valid_access = Validar_NFC(access_code, tipo_acceso)
+
+    if valid_access:
+        user_id ,direction_ref = valid_access
+        Enviar_Respuesta(user_id, tipo_acceso,
+                         medio_acceso, lectora, direction_ref)
     else:
         Respaldo_Online(access_code, lectora)
 
@@ -106,9 +108,9 @@ def Validar_QR(access_code, tipo_acceso):
     # validaciones de tiempo para qrs dinamicos
     if tipo_acceso in [1, 2, 4, 5]:
 
-        # Tiempo de lectura excedido
+        # Tiempo de lectura excedido (milisegundos)
         time_diff = read_time-qr_time
-        if time_diff <= 0 or time_diff > 8000:
+        if time_diff <= 0 or time_diff > 1000 * 8:
             return False
 
         # Dia de la semana incorrecto => F0 - FF (Lunes a domingo)
@@ -131,8 +133,59 @@ def Validar_QR(access_code, tipo_acceso):
     else:
         access_index = Binary_Search_Id(file_db, user_id)
 
-    if access_index:
-        return str(user_id)
+    if not access_index:
+        return False
+
+    direction_ref = False
+    db_data = Get_Line(file_db, access_index).strip().split(".")
+    direction_ref = db_data[-1]
+    if Buscar_usuario_adentro(direction_ref):
+        return (str(user_id), direction_ref)
+
+    if tipo_acceso in [1, 5]:
+        week_schedules = json.loads(db_data[1])
+        if not separator in week_schedules:
+            return False
+
+        day_schedules = week_schedules[separator]
+
+        valid_access_time = False
+        for schedule in day_schedules:
+            start_time_day = schedule[0].split(":")
+            start_time = datetime.time(
+                int(start_time_day[0]), int(start_time_day[1]))
+
+            end_time_day = schedule[1].split(":")
+            end_time = datetime.time(
+                int(end_time_day[0]), int(end_time_day[1]))
+
+            if start_time < datetime.datetime.now().time() and end_time > datetime.datetime.now().time():
+                valid_access_time = True
+                break
+
+        if not valid_access_time:
+            return False
+
+    elif tipo_acceso == 2:
+        bookings = json.loads(db_data[1])
+
+        active_booking = False
+        for booking_id, (start_time, end_time) in bookings.items():
+            if start_time <= read_time and end_time >= read_time:
+                active_booking = True
+                user_id = booking_id
+                break
+
+        if not active_booking:
+            return False
+
+    elif tipo_acceso in [3, 4]:
+
+        # Fuera del tiempo de uso (milisegundos)
+        if not (read_time > int(db_data[1]) and read_time < int(db_data[2])):
+            return False
+
+    return (str(user_id), direction_ref)
 
 
 def Validar_PIN(access_code, tipo_acceso):
@@ -150,7 +203,7 @@ def Validar_PIN(access_code, tipo_acceso):
                 break
 
     if valid_access:
-        return key_db
+        return (key_db, key_db)
 
 
 def Validar_NFC(access_code, tipo_acceso):
@@ -168,7 +221,24 @@ def Validar_NFC(access_code, tipo_acceso):
                 break
 
     if valid_access:
-        return key_db
+        return (key_db, key_db)
+
+
+def Buscar_usuario_adentro(access_key):
+    if access_key and access_key != "":
+        users_in = ""
+        with open(S0+TAB_USER_IN, 'r') as df:
+            users_in = df.read().strip()
+            df.close()
+        try:
+            users_in_json = json.loads(users_in)
+        except Exception as e:
+            users_in_json = {}
+
+        if not str(access_key) in users_in_json:
+            return False
+
+        return int(users_in_json[str(access_key)]) % 2
 
 
 def Definir_Direccion(access_key):
@@ -198,7 +268,7 @@ def Definir_Direccion(access_key):
     return direction
 
 
-def Enviar_Respuesta(user_id, tipo_acceso, medio_acceso, lectora):
+def Enviar_Respuesta(user_id, tipo_acceso, medio_acceso, lectora, direction_ref):
     respuesta_acceso = "Access denied"
     if user_id:
         direction = "0"
@@ -207,9 +277,9 @@ def Enviar_Respuesta(user_id, tipo_acceso, medio_acceso, lectora):
             # Cambiar el id en la tabla autorizados para invitaciones multiples usos
             if tipo_acceso == 4:
                 direction = Definir_Direccion(
-                    str(tipo_acceso)+"."+str(user_id))
+                    str(tipo_acceso)+"."+str(direction_ref))
             else:
-                direction = Definir_Direccion(str(user_id))
+                direction = Definir_Direccion(str(direction_ref))
 
         respuesta_acceso = "Access granted-E" if direction == "0" else "Access granted-S"
         read_time = int(time.time()*1000)
@@ -228,19 +298,20 @@ def Enviar_Respuesta(user_id, tipo_acceso, medio_acceso, lectora):
 
 
 def Respaldo_Online(access_code, lectora):
-    respuesta_acceso = "Access denied"
+    print "Respaldo_Online"
+    # respuesta_acceso = "Access denied"
 
-    respuesta_server = send_petition(
-        "grant", data={"data": access_code})
+    # respuesta_server = send_petition(
+    #     "grant", data={"data": access_code})
 
-    if respuesta_server:
-        respuesta_acceso = respuesta_server
+    # if respuesta_server:
+    #     respuesta_acceso = respuesta_server
 
-    comand_res = [
-        COM_RES,
-        COM_RES_S1,
-        COM_RES_S2
-    ]
+    # comand_res = [
+    #     COM_RES,
+    #     COM_RES_S1,
+    #     COM_RES_S2
+    # ]
 
-    # Envio modulo respuesta
-    Set_File(S0+comand_res[lectora], respuesta_acceso)
+    # # Envio modulo respuesta
+    # Set_File(S0+comand_res[lectora], respuesta_acceso)
