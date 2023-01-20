@@ -31,69 +31,11 @@ def Validar_Acceso(access_code, tipo_acceso, medio_acceso, lectora):
 
 
 def Validar_QR_Antiguo(access_data, tipo_acceso, medio_acceso, lectora):
-    valid_access = False
-    access_key = False
-
-    if tipo_acceso == 1:
-        access_key = access_data[1]
-        db = Get_File(S0+TAB_USER_TIPO_1).strip().split("\n")
-        for access_db in db:
-            if access_db == "":
-                continue
-
-            key_db = access_db.split(".")[0]
-            if access_key == key_db:
-                valid_access = True
-                break
-    elif tipo_acceso == 3:
-        access_key = ".".join(access_data[0:3])
-        db = Get_File(S0+TAB_USER_TIPO_3).split("\n")
-
-        for i, access_db in enumerate(db):
-            if access_db == "":
-                continue
-            key_db = ".".join(access_db.split(".")[0:3])
-            if access_key == key_db:
-                Clear_Line(S0+TAB_USER_TIPO_3, i+1)
-                access_key = False
-                valid_access = True
-                break
-    elif tipo_acceso == 4:
-        access_key = ".".join(access_data[1:5])
-        db = Get_File(S0+TAB_USER_TIPO_4).strip().split("\n")
-        for access_db in db:
-            if access_db == "":
-                continue
-            key_db = ".".join(access_db.split(".")[1:5])
-            if access_key == key_db:
-                valid_access = True
-                break
-
-    respuesta_acceso = "Access denied"
-    if valid_access:
-        direction = "0"
-
-        if tipo_acceso != 3:
-            direction = Definir_Direccion(key_db)
-
-        respuesta_acceso = "Access granted-E" if direction == "0" else "Access granted-S"
-        read_time = int(time.time()*1000)
-        athorization_code = ".".join(access_data) + "."+str(read_time) + \
-            "."+str(medio_acceso) + "."+direction+"."+"1"
-        Add_Line_End(S0+TAB_ENV_SERVER, athorization_code+"\n")
-        comand_res = [
-            COM_RES,
-            COM_RES_S1,
-            COM_RES_S2
-        ]
-
-        # Envio modulo respuesta
-        Set_File(S0+comand_res[lectora], respuesta_acceso)
-    else:
-        Respaldo_Online({
-            "access_type": tipo_acceso,
-            "data": "<" + ".".join(access_data) + ">"
-        }, lectora)
+    Respaldo_Online({
+        "access_type": tipo_acceso,
+        "data": "<" + ".".join(access_data) + ">",
+        "old_qr_code": True
+    }, lectora)
 
 
 def Validar_QR(access_code, tipo_acceso):
@@ -307,19 +249,19 @@ def Enviar_Respuesta(user_id, tipo_acceso, medio_acceso, lectora, direction_ref)
 def Respaldo_Online(data, lectora):
     respuesta_acceso = "Access denied"
     respuesta_server = False
-
-    if "access_type" in data:
-        pass
-        # respueDefinir_Direccionsta_server = send_petition("online backup", json_data=data)
+    if "old_qr_code" in data:
+        respuesta_server = send_petition(
+            "grant", method="POST", json_data=data, timeout=10)
+        if respuesta_server and respuesta_server.ok:
+            respuesta_acceso = respuesta_server.text
+            respuesta_acceso = respuesta_acceso if "Access granted" in respuesta_acceso else "Access denied"
+    else:
+        # respueDefinir_Direccionsta_server = send_petition("online backup",method="POST", json_data=data)
         # if respuesta_server and respuesta_server.ok:
         #     respuesta_acceso = respuesta_server.text
         #     respuesta_acceso = respuesta_acceso if "Access granted" in respuesta_acceso else "Access denied"
         #     Definir_Direccion()
-    else:
-        respuesta_server = send_petition("grant", json_data=data)
-        if respuesta_server and respuesta_server.ok:
-            respuesta_acceso = respuesta_server.text
-            respuesta_acceso = respuesta_acceso if "Access granted" in respuesta_acceso else "Access denied"
+        pass
 
     comand_res = [
         COM_RES,

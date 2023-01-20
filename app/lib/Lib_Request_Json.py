@@ -42,9 +42,9 @@ def send_petition(url, method="GET", params=None, data={}, json_data={}, headers
 
 
 def Get_Rout_server():
-    mejor_opcion = Get_File(S0+CONF_M_CONEX_SERVER)
-    IP_Ser = Get_File(S0+CONF_IP_SERVER)
-    Domi_Ser = Get_File(S0+CONF_DOMI_SERVER)
+    mejor_opcion = Get_File(S0+CONF_M_CONEX_SERVER).strip()
+    IP_Ser = Get_File(S0+CONF_IP_SERVER).strip()
+    Domi_Ser = Get_File(S0+CONF_DOMI_SERVER).strip()
 
     opciones = {'0': 'http://' + IP_Ser,
                 '1': 'http://' + Domi_Ser,
