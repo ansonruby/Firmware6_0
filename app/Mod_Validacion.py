@@ -10,7 +10,7 @@ import datetime
 
 
 def Validar_Acceso(access_code, tipo_acceso, medio_acceso, lectora):
-    valid_access=False
+    valid_access = False
     if medio_acceso == 1:
         valid_access = Validar_QR(access_code, tipo_acceso)
     elif medio_acceso == 2:
@@ -19,11 +19,15 @@ def Validar_Acceso(access_code, tipo_acceso, medio_acceso, lectora):
         valid_access = Validar_NFC(access_code, tipo_acceso)
 
     if valid_access:
-        user_id ,direction_ref = valid_access
+        user_id, direction_ref = valid_access
         Enviar_Respuesta(user_id, tipo_acceso,
                          medio_acceso, lectora, direction_ref)
     else:
-        Respaldo_Online(access_code, lectora)
+        Respaldo_Online({
+            "access_type": tipo_acceso,
+            "access_medium": medio_acceso,
+            "access_code": access_code
+        }, lectora)
 
 
 def Validar_QR_Antiguo(access_data, tipo_acceso, medio_acceso, lectora):
@@ -86,7 +90,10 @@ def Validar_QR_Antiguo(access_data, tipo_acceso, medio_acceso, lectora):
         # Envio modulo respuesta
         Set_File(S0+comand_res[lectora], respuesta_acceso)
     else:
-        Respaldo_Online("<" + ".".join(access_data) + ">", lectora)
+        Respaldo_Online({
+            "access_type": tipo_acceso,
+            "data": "<" + ".".join(access_data) + ">"
+        }, lectora)
 
 
 def Validar_QR(access_code, tipo_acceso):
@@ -297,21 +304,28 @@ def Enviar_Respuesta(user_id, tipo_acceso, medio_acceso, lectora, direction_ref)
     Set_File(S0+comand_res[lectora], respuesta_acceso)
 
 
-def Respaldo_Online(access_code, lectora):
-    print "Respaldo_Online"
-    # respuesta_acceso = "Access denied"
+def Respaldo_Online(data, lectora):
+    respuesta_acceso = "Access denied"
+    respuesta_server = False
 
-    # respuesta_server = send_petition(
-    #     "grant", data={"data": access_code})
+    if "access_type" in data:
+        pass
+        # respueDefinir_Direccionsta_server = send_petition("online backup", json_data=data)
+        # if respuesta_server and respuesta_server.ok:
+        #     respuesta_acceso = respuesta_server.text
+        #     respuesta_acceso = respuesta_acceso if "Access granted" in respuesta_acceso else "Access denied"
+        #     Definir_Direccion()
+    else:
+        respuesta_server = send_petition("grant", json_data=data)
+        if respuesta_server and respuesta_server.ok:
+            respuesta_acceso = respuesta_server.text
+            respuesta_acceso = respuesta_acceso if "Access granted" in respuesta_acceso else "Access denied"
 
-    # if respuesta_server:
-    #     respuesta_acceso = respuesta_server
+    comand_res = [
+        COM_RES,
+        COM_RES_S1,
+        COM_RES_S2
+    ]
 
-    # comand_res = [
-    #     COM_RES,
-    #     COM_RES_S1,
-    #     COM_RES_S2
-    # ]
-
-    # # Envio modulo respuesta
-    # Set_File(S0+comand_res[lectora], respuesta_acceso)
+    # Envio modulo respuesta
+    Set_File(S0+comand_res[lectora], respuesta_acceso)
