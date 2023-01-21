@@ -51,7 +51,8 @@ def Validar_QR(access_code, tipo_acceso):
     user_id = int(user_id)
     read_time = int(time.time()*1000)
     time_len = len(str(read_time))
-    qr_time = int(final_data[:time_len])
+    qr_time_str = final_data[:time_len]
+    qr_time = int(qr_time_str) if len(qr_time_str) > 0 else 0
     extra_data = final_data[time_len:]
 
     # validaciones de tiempo para qrs dinamicos
