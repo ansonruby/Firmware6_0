@@ -38,7 +38,7 @@ from Lib_Rout import *            # importar con los mismos nombres
 #                       CONSTANTES
 #-----------------------------------------------------------
 
-FS_Mensajes     = 1               # 0: NO print  1: Print
+FS_Mensajes     = 0               # 0: NO print  1: Print
 
 #-----------------------------------------------------------
 #                       Variables
@@ -545,7 +545,7 @@ class LECTORAS(object):
             #print 'T_Diferencia: ' + str(T_transcurido)
             if T_transcurido >= self.T_Maximo_QR :
                 self.T_Nuev_QR = self.T_Repe_QR = time.time()
-                Nueva_Avilitacion_portiempo_y_Tipo()
+                self.Nueva_Avilitacion_portiempo_y_Tipo()
             else:
                 if FS_Mensajes: print 'Repetido'
                 #Set_File(STATUS_REPEAT_QR, '2')    # Estado QR repetido
@@ -561,7 +561,7 @@ class LECTORAS(object):
     def Nueva_Avilitacion_portiempo_y_Tipo(self):
         global FS_Mensajes
         self.QR
-        if self.QR[2]=='3': Activar_QR(self)
+        if self.QR[2]=='3': self.Activar_QR()
 
         """
         #print 'Repe_Nueva habilitacion'
