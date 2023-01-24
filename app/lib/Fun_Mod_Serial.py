@@ -558,28 +558,28 @@ class LECTORAS(object):
         Set_File(self.Lectura_COM_QR, self.QR)
 
 
-def Nueva_Avilitacion_portiempo_y_Tipo(self):
-    global FS_Mensajes
-    self.QR
-    if self.QR[2]=='3': Activar_QR(self)
+    def Nueva_Avilitacion_portiempo_y_Tipo(self):
+        global FS_Mensajes
+        self.QR
+        if self.QR[2]=='3': Activar_QR(self)
 
-    """
-    #print 'Repe_Nueva habilitacion'
-    puntos = QR.count(".")
-    #print puntos
-    if puntos == 1:
+        """
+        #print 'Repe_Nueva habilitacion'
+        puntos = QR.count(".")
+        #print puntos
+        if puntos == 1:
         if SQ_Mensajes: print 'R_Avi Tiket: '+QR
         Set_File(STATUS_QR, '1')
-    elif puntos == 3:
+        elif puntos == 3:
         if SQ_Mensajes: print 'R_Avi Tiket: '+QR
         Set_File(STATUS_QR, '1')
-    elif puntos == 4:               #para tipo 3
+        elif puntos == 4:               #para tipo 3
         if SQ_Mensajes: print 'R_Avi Tipo 3: '+QR
         Set_File(STATUS_QR, '1')
-    else:
+        else:
         if SQ_Mensajes: print 'Repetido'
         Set_File(STATUS_REPEAT_QR, '2')
-    """
+        """
 
 #---------------------------------------------------------
 #---------------------------------------------------------
