@@ -295,7 +295,6 @@ def Respaldo_Online(data, lectora):
             else:
                 respuesta_acceso = respuesta_server["respuesta"]
 
-
     comand_res = [
         COM_RES,
         COM_RES_S1,

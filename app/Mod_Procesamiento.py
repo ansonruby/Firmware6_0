@@ -1,7 +1,7 @@
 from lib.Lib_File import Clear_File, Get_File
 from lib.Lib_Rout import *
 from lib.Lib_Threads import Create_Thread_Daemon
-from Mod_Validacion import Validar_QR_Antiguo, Validar_Acceso
+from Mod_Validacion import Validar_QR_Antiguo, Validar_Acceso, Respaldo_Online
 import re
 import time
 
@@ -28,7 +28,10 @@ def Filtro_Tipos_QR_Antiguo(access_code, medio_acceso=1, lectora=0):
             Validar_QR_Antiguo(
                 access_data, tipo_acceso, medio_acceso, lectora)
         else:
-            print "Invalid data of access"
+            Respaldo_Online({
+                "access_medium": medio_acceso,
+                "access_code": access_code
+            }, lectora)
 
 
 def Filtro_Tipos_Acceso(access_code, medio_acceso=1, lectora=0):
@@ -59,9 +62,15 @@ def Filtro_Tipos_Acceso(access_code, medio_acceso=1, lectora=0):
             Validar_Acceso(
                 access_code, tipo_acceso, medio_acceso, lectora)
         else:
-            print "Invalid data of access"
+            Respaldo_Online({
+                "access_medium": medio_acceso,
+                "access_code": access_code
+            }, lectora)
     except Exception as e:
-        print e
+        Respaldo_Online({
+            "access_medium": medio_acceso,
+            "access_code": access_code
+        }, lectora)
 
 
 def Recibir_Codigo_Accesso():
