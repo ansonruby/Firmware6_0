@@ -285,12 +285,16 @@ def Respaldo_Online(data, lectora):
             respuesta_acceso = respuesta_server.text
             respuesta_acceso = respuesta_acceso if "Access granted" in respuesta_acceso else "Access denied"
     else:
-        # respueDefinir_Direccionsta_server = send_petition("online backup",method="POST", json_data=data)
-        # if respuesta_server and respuesta_server.ok:
-        #     respuesta_acceso = respuesta_server.text
-        #     respuesta_acceso = respuesta_acceso if "Access granted" in respuesta_acceso else "Access denied"
-        #     Definir_Direccion()
-        pass
+        respuesta_server = send_petition(
+            "online_backup", method="POST", json_data=data)
+        if respuesta_server and respuesta_server.ok:
+            respuesta_server = respuesta_server.json()
+            if "Access granted" in respuesta_server["respuesta"]:
+                respuesta_acceso = respuesta_server["respuesta"]
+                Definir_Direccion(respuesta_server["user_id"])
+            else:
+                respuesta_acceso = respuesta_server["respuesta"]
+
 
     comand_res = [
         COM_RES,

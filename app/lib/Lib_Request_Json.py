@@ -10,7 +10,7 @@ fixed_urls = {
     "get_users": "/api/app/scan_devices/get_granted_accesess_hub",
     "grant": "/api/access/grant",
     "send_autorizations": "/api/access/set_in_out_activity",
-    "3": "/api/access/verify_conection",
+    "online_backup": "/api/access/online_backup",
     "4": "/api/firmware/review_update",
     "5": "/api/firmware/confirm_update"
 }
