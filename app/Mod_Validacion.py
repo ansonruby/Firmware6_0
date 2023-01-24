@@ -19,8 +19,8 @@ def Validar_Acceso(access_code, tipo_acceso, medio_acceso, lectora):
         valid_access = Validar_NFC(access_code, tipo_acceso)
 
     if valid_access:
-        user_id, direction_ref = valid_access
-        Enviar_Respuesta(user_id, tipo_acceso,
+        user_index, direction_ref = valid_access
+        Enviar_Respuesta(user_index, tipo_acceso,
                          medio_acceso, lectora, direction_ref)
     else:
         Respaldo_Online({
@@ -47,13 +47,19 @@ def Validar_QR(access_code, tipo_acceso):
     else:
         separator = separator[0]
 
-    user_id, final_data = access_code.split(separator)
-    user_id = int(user_id)
+    user_index, final_data = access_code.split(separator)
     read_time = int(time.time()*1000)
     time_len = len(str(read_time))
     qr_time_str = final_data[:time_len]
     qr_time = int(qr_time_str) if len(qr_time_str) > 0 else 0
     extra_data = final_data[time_len:]
+
+    direction_ref = False
+    invitation_index = False
+
+    if tipo_acceso in [4]:
+        direction_ref = user_index
+        user_index, invitation_index = user_index.split("E")
 
     # validaciones de tiempo para qrs dinamicos
     if tipo_acceso in [1, 2, 4, 5]:
@@ -78,19 +84,18 @@ def Validar_QR(access_code, tipo_acceso):
 
     file_db = S0+tabs_users[tipo_acceso-1]
     access_index = False
-    if tipo_acceso == 3:
-        access_index = Binary_Remove_Id(file_db, user_id)
-    else:
-        access_index = Binary_Search_Id(file_db, user_id)
+    access_index = Binary_Search_Id(file_db, user_index)
 
     if not access_index:
         return False
 
-    direction_ref = False
     db_data = Get_Line(file_db, access_index).strip().split(".")
-    direction_ref = db_data[-1]
+
+    if tipo_acceso in [1, 2, 5, 6, 7]:
+        direction_ref = db_data[-1]
+
     if Buscar_usuario_adentro(direction_ref):
-        return (str(user_id), direction_ref)
+        return (user_index, direction_ref)
 
     if tipo_acceso in [1, 5]:
         week_schedules = json.loads(db_data[1])
@@ -123,19 +128,33 @@ def Validar_QR(access_code, tipo_acceso):
         for booking_id, (start_time, end_time) in bookings.items():
             if start_time <= read_time and end_time >= read_time:
                 active_booking = True
-                user_id = booking_id
+                user_index = booking_id
                 break
 
         if not active_booking:
             return False
 
-    elif tipo_acceso in [3, 4]:
+    elif tipo_acceso == 3:
 
         # Fuera del tiempo de uso (milisegundos)
         if not (read_time > int(db_data[1]) and read_time < int(db_data[2])):
             return False
 
-    return (str(user_id), direction_ref)
+    elif tipo_acceso == 4:
+        invitations = json.loads(db_data[1])
+
+        active_invitation = False
+        for invitation_id, (start_time, end_time) in invitations.items():
+            if start_time <= read_time and end_time >= read_time:
+                active_invitation = True
+                user_index = invitation_id
+                break
+
+        if not active_invitation:
+            return False
+
+
+    return (str(user_index), direction_ref)
 
 
 def Validar_PIN(access_code, tipo_acceso):
@@ -218,9 +237,9 @@ def Definir_Direccion(access_key):
     return direction
 
 
-def Enviar_Respuesta(user_id, tipo_acceso, medio_acceso, lectora, direction_ref):
+def Enviar_Respuesta(user_index, tipo_acceso, medio_acceso, lectora, direction_ref):
     respuesta_acceso = "Access denied"
-    if user_id:
+    if user_index:
         direction = "0"
 
         if tipo_acceso != 3:
@@ -233,7 +252,7 @@ def Enviar_Respuesta(user_id, tipo_acceso, medio_acceso, lectora, direction_ref)
 
         respuesta_acceso = "Access granted-E" if direction == "0" else "Access granted-S"
         read_time = int(time.time()*1000)
-        athorization_code = str(user_id) + "."+str(read_time) + \
+        athorization_code = str(user_index) + "."+str(read_time) + \
             "."+str(medio_acceso) + "."+direction+"."+"1"
         Add_Line_End(S0+TAB_ENV_SERVER, athorization_code+"\n")
 

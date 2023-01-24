@@ -97,7 +97,7 @@ def Recibir_Codigo_Accesso():
                              Get_File(S0+COM_TECLADO_S2), 2, 2)
         Clear_File(S0+STATUS_TECLADO_S2)
 
-    # Medio de acceso 5-11:PIN
+    # Medio de acceso 5-11:NFC
     if Get_File(S0+STATUS_NFC) == '1':
         Create_Thread_Daemon(Filtro_Tipos_Acceso,
                              Get_File(S0+COM_NFC), 11, 0)
