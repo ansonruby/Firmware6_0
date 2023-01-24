@@ -1,5 +1,5 @@
 from lib.Lib_Rout import *
-from lib.Lib_File import Get_File, Clear_Line, Set_File, Add_Line_End, Get_Line
+from lib.Lib_File import Get_File, Set_File, Add_Line_End, Get_Line
 from lib.Fun_Tipo_NFC import MD5
 from lib.Lib_Binary_Search import Binary_Search_Id, Binary_Remove_Id
 from lib.Lib_Request_Json import send_petition
@@ -8,15 +8,17 @@ import re
 import time
 import datetime
 
+config_access = "Accesos"  # "Accesos" o "Acceso dinamico" o "Acceso fisico"
+
 
 def Validar_Acceso(access_code, tipo_acceso, medio_acceso, lectora):
     valid_access = False
     if medio_acceso == 1:
-        valid_access = Validar_QR(access_code, tipo_acceso)
+        valid_access = Validar_QR(access_code, tipo_acceso, lectora)
     elif medio_acceso == 2:
-        valid_access = Validar_PIN(access_code, tipo_acceso)
+        valid_access = Validar_PIN(access_code, tipo_acceso, lectora)
     elif medio_acceso == 11:
-        valid_access = Validar_NFC(access_code, tipo_acceso)
+        valid_access = Validar_NFC(access_code, tipo_acceso, lectora)
 
     if valid_access:
         user_index, direction_ref = valid_access
@@ -38,7 +40,7 @@ def Validar_QR_Antiguo(access_data, tipo_acceso, medio_acceso, lectora):
     }, lectora)
 
 
-def Validar_QR(access_code, tipo_acceso):
+def Validar_QR(access_code, tipo_acceso, lectora):
     separator = re.findall("F[A-F]", access_code)
 
     # Separador no encontrado
@@ -94,7 +96,7 @@ def Validar_QR(access_code, tipo_acceso):
     if tipo_acceso in [1, 2, 5, 6, 7]:
         direction_ref = db_data[-1]
 
-    user_in_index = Buscar_usuario_adentro(direction_ref)
+    user_in_index = Buscar_usuario_adentro(direction_ref, lectora)
     if user_in_index:
         return (user_in_index, direction_ref)
 
@@ -160,7 +162,7 @@ def Validar_QR(access_code, tipo_acceso):
     return (str(user_index), direction_ref)
 
 
-def Validar_PIN(access_code, tipo_acceso):
+def Validar_PIN(access_code, tipo_acceso, lectora):
     valid_access = False
     access_key = False
     if tipo_acceso == 1:
@@ -178,7 +180,7 @@ def Validar_PIN(access_code, tipo_acceso):
         return (key_db, key_db)
 
 
-def Validar_NFC(access_code, tipo_acceso):
+def Validar_NFC(access_code, tipo_acceso, lectora):
     valid_access = False
     access_key = False
     if tipo_acceso == 6:
@@ -196,48 +198,79 @@ def Validar_NFC(access_code, tipo_acceso):
         return (key_db, key_db)
 
 
-def Buscar_usuario_adentro(access_key):
-    if access_key and access_key != "":
-        users_in = ""
-        with open(S0+TAB_USER_IN, 'r') as df:
-            users_in = df.read().strip()
-            df.close()
-        try:
-            users_in_json = json.loads(users_in)
-        except Exception as e:
-            users_in_json = {}
+def Buscar_usuario_adentro(access_key, lectora):
+    global config_access
 
-        if not str(access_key) in users_in_json:
-            return False
+    if (config_access == "Acceso fisico" and lectora % 2) or config_access == "Acceso dinamico":
+        if access_key and access_key != "":
+            users_in = ""
+            with open(S0+TAB_USER_IN, 'r') as df:
+                users_in = df.read().strip()
+                df.close()
+            try:
+                users_in_json = json.loads(users_in)
+            except Exception as e:
+                users_in_json = {}
 
-        return users_in_json[str(access_key)][0] if int(users_in_json[str(access_key)][1]) % 2 else False
+            if not str(access_key) in users_in_json:
+                return False
+
+            return users_in_json[str(access_key)][0] if int(users_in_json[str(access_key)][1]) % 2 else False
 
 
-def Definir_Direccion(access_key, user_index):
+def Definir_Direccion(access_key, user_index, lectora):
+    global config_access
+
     direction = "0"
 
-    if access_key and access_key != "":
-        users_in = ""
-        with open(S0+TAB_USER_IN, 'r') as df:
-            users_in = df.read().strip()
-            df.close()
-        try:
-            users_in_json = json.loads(users_in)
-        except Exception as e:
-            users_in_json = {}
+    if config_access == "Accesos":
+        return direction
+    elif config_access == "Acceso fisico":
+        if access_key and access_key != "":
+            users_in = ""
+            with open(S0+TAB_USER_IN, 'r') as df:
+                users_in = df.read().strip()
+                df.close()
+            try:
+                users_in_json = json.loads(users_in)
+            except Exception as e:
+                users_in_json = {}
 
-        if str(access_key) in users_in_json:
-            direction = "1"
-            users_in_json.pop(str(access_key))
-        else:
-            users_in_json[str(access_key)] = [user_index, "1"]
-        users_in = json.dumps(users_in_json, indent=4)
+            if lectora % 2 == 0:
+                users_in_json[str(access_key)] = [user_index, "1"]
+            elif str(access_key) in users_in_json:
+                users_in_json.pop(str(access_key))
+            
+            users_in = json.dumps(users_in_json, indent=4)
+            with open(S0+TAB_USER_IN, 'w') as dfw:
+                dfw.write(users_in)
+                dfw.close()
 
-        with open(S0+TAB_USER_IN, 'w') as dfw:
-            dfw.write(users_in)
-            dfw.close()
+        return str(lectora % 2)
+        
+    elif config_access == "Acceso dinamico":
+        if access_key and access_key != "":
+            users_in = ""
+            with open(S0+TAB_USER_IN, 'r') as df:
+                users_in = df.read().strip()
+                df.close()
+            try:
+                users_in_json = json.loads(users_in)
+            except Exception as e:
+                users_in_json = {}
 
-    return direction
+            if str(access_key) in users_in_json:
+                direction = "1"
+                users_in_json.pop(str(access_key))
+            else:
+                users_in_json[str(access_key)] = [user_index, "1"]
+            users_in = json.dumps(users_in_json, indent=4)
+
+            with open(S0+TAB_USER_IN, 'w') as dfw:
+                dfw.write(users_in)
+                dfw.close()
+
+        return direction
 
 
 def Enviar_Respuesta(user_index, tipo_acceso, medio_acceso, lectora, direction_ref):
@@ -247,7 +280,8 @@ def Enviar_Respuesta(user_index, tipo_acceso, medio_acceso, lectora, direction_r
 
         if tipo_acceso != 3:
             # Cambiar el id en la tabla autorizados para invitaciones multiples usos
-            direction = Definir_Direccion(str(direction_ref), user_index)
+            direction = Definir_Direccion(
+                str(direction_ref), user_index, lectora)
 
         respuesta_acceso = "Access granted-E" if direction == "0" else "Access granted-S"
         read_time = int(time.time()*1000)
@@ -289,11 +323,12 @@ def Respaldo_Online(data, lectora):
             "online_backup", method="POST", json_data=data)
         if respuesta_server and respuesta_server.ok:
             respuesta_server = respuesta_server.json()
-            if "Access granted" in respuesta_server["respuesta"]:
-                respuesta_acceso = respuesta_server["respuesta"]
-                Definir_Direccion(respuesta_server["user_id"])
+            if "Access granted" in respuesta_server["access_answer"]:
+                respuesta_acceso = respuesta_server["access_answer"]
+                Definir_Direccion(
+                    respuesta_server["user_id"], respuesta_server["user_index"], lectora)
             else:
-                respuesta_acceso = respuesta_server["respuesta"]
+                respuesta_acceso = respuesta_server["access_answer"]
 
     comand_res = [
         COM_RES,
