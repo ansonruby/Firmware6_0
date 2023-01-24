@@ -153,7 +153,6 @@ def Validar_QR(access_code, tipo_acceso):
         if not active_invitation:
             return False
 
-
     return (str(user_index), direction_ref)
 
 
@@ -254,7 +253,17 @@ def Enviar_Respuesta(user_index, tipo_acceso, medio_acceso, lectora, direction_r
         read_time = int(time.time()*1000)
         athorization_code = str(user_index) + "."+str(read_time) + \
             "."+str(medio_acceso) + "."+direction+"."+"1"
-        Add_Line_End(S0+TAB_ENV_SERVER, athorization_code+"\n")
+        tabs_autorizaciones = [
+            NEW_AUTO_USER_TIPO_1,
+            NEW_AUTO_USER_TIPO_2,
+            NEW_AUTO_USER_TIPO_3,
+            NEW_AUTO_USER_TIPO_4,
+            NEW_AUTO_USER_TIPO_5
+        ]
+        Add_Line_End(
+            S0+tabs_autorizaciones[tipo_acceso-1],
+            athorization_code+"\n"
+        )
 
     comand_res = [
         COM_RES,
