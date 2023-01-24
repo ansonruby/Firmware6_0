@@ -38,7 +38,7 @@ from Lib_Rout import *            # importar con los mismos nombres
 #                       CONSTANTES
 #-----------------------------------------------------------
 
-FS_Mensajes     = 1               # 0: NO print  1: Print
+FS_Mensajes     = 0               # 0: NO print  1: Print
 
 #-----------------------------------------------------------
 #                       Variables
