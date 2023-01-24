@@ -94,8 +94,9 @@ def Validar_QR(access_code, tipo_acceso):
     if tipo_acceso in [1, 2, 5, 6, 7]:
         direction_ref = db_data[-1]
 
-    if Buscar_usuario_adentro(direction_ref):
-        return (user_index, direction_ref)
+    user_in_index = Buscar_usuario_adentro(direction_ref)
+    if user_in_index:
+        return (user_in_index, direction_ref)
 
     if tipo_acceso in [1, 5]:
         week_schedules = json.loads(db_data[1])
@@ -140,17 +141,20 @@ def Validar_QR(access_code, tipo_acceso):
         if not (read_time > int(db_data[1]) and read_time < int(db_data[2])):
             return False
 
+        Binary_Remove_Id(file_db, user_index)
+
     elif tipo_acceso == 4:
         invitations = json.loads(db_data[1])
 
-        active_invitation = False
-        for invitation_id, (start_time, end_time) in invitations.items():
-            if start_time <= read_time and end_time >= read_time:
-                active_invitation = True
-                user_index = invitation_id
-                break
+        if not invitation_index in invitations:
+            return False
 
-        if not active_invitation:
+        start_time = int(invitations[invitation_index][0])
+        end_time = int(invitations[invitation_index][1])
+
+        if start_time <= read_time and end_time >= read_time:
+            user_index = invitation_index
+        else:
             return False
 
     return (str(user_index), direction_ref)
@@ -206,10 +210,10 @@ def Buscar_usuario_adentro(access_key):
         if not str(access_key) in users_in_json:
             return False
 
-        return int(users_in_json[str(access_key)]) % 2
+        return users_in_json[str(access_key)][0] if int(users_in_json[str(access_key)][1]) % 2 else False
 
 
-def Definir_Direccion(access_key):
+def Definir_Direccion(access_key, user_index):
     direction = "0"
 
     if access_key and access_key != "":
@@ -226,8 +230,8 @@ def Definir_Direccion(access_key):
             direction = "1"
             users_in_json.pop(str(access_key))
         else:
-            users_in_json[str(access_key)] = "1"
-        users_in = json.dumps(users_in_json, indent=2)
+            users_in_json[str(access_key)] = [user_index, "1"]
+        users_in = json.dumps(users_in_json, indent=4)
 
         with open(S0+TAB_USER_IN, 'w') as dfw:
             dfw.write(users_in)
@@ -243,11 +247,7 @@ def Enviar_Respuesta(user_index, tipo_acceso, medio_acceso, lectora, direction_r
 
         if tipo_acceso != 3:
             # Cambiar el id en la tabla autorizados para invitaciones multiples usos
-            if tipo_acceso == 4:
-                direction = Definir_Direccion(
-                    str(tipo_acceso)+"."+str(direction_ref))
-            else:
-                direction = Definir_Direccion(str(direction_ref))
+            direction = Definir_Direccion(str(direction_ref), user_index)
 
         respuesta_acceso = "Access granted-E" if direction == "0" else "Access granted-S"
         read_time = int(time.time()*1000)
