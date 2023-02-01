@@ -54,9 +54,9 @@ def Filtro_Tipos_Acceso(access_code, medio_acceso=1, lectora=0):
                 tipo_acceso = int(filter_access_code[0])
                 access_code = filter_access_code[1:]
 
-        # Tipo 1 pin: Pin (temporalmente se evalua como tipo 1)
+        # Tipo 7 pin: 
         elif medio_acceso == 2:
-            tipo_acceso = 1
+            tipo_acceso = 7
 
         if tipo_acceso:
             Validar_Acceso(

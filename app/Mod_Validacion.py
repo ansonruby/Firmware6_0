@@ -35,6 +35,7 @@ def Validar_Acceso(access_code, tipo_acceso, medio_acceso, lectora):
 def Validar_QR_Antiguo(access_data, tipo_acceso, medio_acceso, lectora):
     Respaldo_Online({
         "access_type": tipo_acceso,
+        "access_medium": medio_acceso,
         "data": "<" + ".".join(access_data) + ">",
         "old_qr_code": True
     }, lectora)
@@ -93,12 +94,15 @@ def Validar_QR(access_code, tipo_acceso, lectora):
 
     db_data = Get_Line(file_db, access_index).strip().split(".")
 
-    if tipo_acceso in [1, 2, 5, 6, 7]:
+    if tipo_acceso in [1, 2, 5]:
         direction_ref = db_data[-1]
 
     user_in_index = Buscar_usuario_adentro(direction_ref, lectora)
     if user_in_index:
-        return (user_in_index, direction_ref)
+        if tipo_acceso in [2, 4]:
+            return (user_in_index, direction_ref)
+        else:
+            return (user_index, direction_ref)
 
     if tipo_acceso in [1, 5]:
         week_schedules = json.loads(db_data[1])
@@ -163,21 +167,55 @@ def Validar_QR(access_code, tipo_acceso, lectora):
 
 
 def Validar_PIN(access_code, tipo_acceso, lectora):
-    valid_access = False
-    access_key = False
-    if tipo_acceso == 1:
-        access_key = MD5(access_code)
-        db = Get_File(S0+TAB_USER_TIPO_1).strip().split("\n")
-        for access_db in db:
-            if access_db == "":
-                continue
-            key_db, encrypted_pin = access_db.split(".")
-            if access_key == encrypted_pin:
-                valid_access = True
+    pin_index = access_code[:-4]
+    encrypt_pin = MD5(access_code[-4:])
+    file_db = S0+NEW_TAB_USER_TIPO_7
+
+    access_index = Binary_Search_Id(file_db, pin_index)
+
+    if not access_index:
+        return False
+
+    db_data = Get_Line(file_db, access_index).strip().split(".")
+
+    direction_ref = db_data[-1]
+
+    user_in_index = Buscar_usuario_adentro(direction_ref, lectora)
+    if user_in_index:
+        return (pin_index, direction_ref)
+
+    if tipo_acceso == 7:
+
+        if encrypt_pin != db_data[1]:
+            return False
+
+        weekdays = ["F0", "FA", "FB", "FC", "FD", "FE", "FF"]
+
+        today = weekdays[datetime.datetime.today().weekday()]
+        week_schedules = json.loads(db_data[2])
+        if not today in week_schedules:
+            return False
+
+        day_schedules = week_schedules[today]
+
+        valid_access_time = False
+        for schedule in day_schedules:
+            start_time_day = schedule[0].split(":")
+            start_time = datetime.time(
+                int(start_time_day[0]), int(start_time_day[1]))
+
+            end_time_day = schedule[1].split(":")
+            end_time = datetime.time(
+                int(end_time_day[0]), int(end_time_day[1]))
+
+            if start_time < datetime.datetime.now().time() and end_time > datetime.datetime.now().time():
+                valid_access_time = True
                 break
 
-    if valid_access:
-        return (key_db, key_db)
+        if not valid_access_time:
+            return False
+
+    return (str(pin_index), direction_ref)
 
 
 def Validar_NFC(access_code, tipo_acceso, lectora):
@@ -189,13 +227,41 @@ def Validar_NFC(access_code, tipo_acceso, lectora):
         for access_db in db:
             if access_db == "":
                 continue
-            key_db, encrypted_pin = access_db.split(".")
-            if access_key == encrypted_pin:
-                valid_access = True
+            db_data = access_db.split(".")
+            nfc_code = db_data[0]
+
+            if access_key == nfc_code:
+
+                weekdays = ["F0", "FA", "FB", "FC", "FD", "FE", "FF"]
+
+                today = weekdays[datetime.datetime.today().weekday()]
+                week_schedules = json.loads(db_data[1])
+                if not today in week_schedules:
+                    return False
+
+                day_schedules = week_schedules[today]
+
+                valid_access_time = False
+                for schedule in day_schedules:
+                    start_time_day = schedule[0].split(":")
+                    start_time = datetime.time(
+                        int(start_time_day[0]), int(start_time_day[1]))
+
+                    end_time_day = schedule[1].split(":")
+                    end_time = datetime.time(
+                        int(end_time_day[0]), int(end_time_day[1]))
+
+                    if start_time < datetime.datetime.now().time() and end_time > datetime.datetime.now().time():
+                        valid_access_time = True
+                        break
+
+                if valid_access_time:
+                    direction_ref = db_data[-1]
+                    valid_access = True
                 break
 
     if valid_access:
-        return (key_db, key_db)
+        return (direction_ref, direction_ref)
 
 
 def Buscar_usuario_adentro(access_key, lectora):
@@ -240,14 +306,14 @@ def Definir_Direccion(access_key, user_index, lectora):
                 users_in_json[str(access_key)] = [user_index, "1"]
             elif str(access_key) in users_in_json:
                 users_in_json.pop(str(access_key))
-            
+
             users_in = json.dumps(users_in_json, indent=4)
             with open(S0+TAB_USER_IN, 'w') as dfw:
                 dfw.write(users_in)
                 dfw.close()
 
         return str(lectora % 2)
-        
+
     elif config_access == "Acceso dinamico":
         if access_key and access_key != "":
             users_in = ""
@@ -292,7 +358,9 @@ def Enviar_Respuesta(user_index, tipo_acceso, medio_acceso, lectora, direction_r
             NEW_AUTO_USER_TIPO_2,
             NEW_AUTO_USER_TIPO_3,
             NEW_AUTO_USER_TIPO_4,
-            NEW_AUTO_USER_TIPO_5
+            NEW_AUTO_USER_TIPO_5,
+            NEW_AUTO_USER_TIPO_6,
+            NEW_AUTO_USER_TIPO_7
         ]
         Add_Line_End(
             S0+tabs_autorizaciones[tipo_acceso-1],

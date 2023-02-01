@@ -276,6 +276,8 @@ NEW_TAB_USER_TIPO_2     = NEW_DATA + 'Tipo_2.txt'                     # Usuarios
 NEW_TAB_USER_TIPO_3     = NEW_DATA + 'Tipo_3.txt'                     # Usuarios del servidor o counter
 NEW_TAB_USER_TIPO_4     = NEW_DATA + 'Tipo_4.txt'                     # Usuarios del servidor o counter
 NEW_TAB_USER_TIPO_5     = NEW_DATA + 'Tipo_5.txt'                     # Usuarios del servidor o counter
+NEW_TAB_USER_TIPO_6     = NEW_DATA + 'Tipo_6.txt'                     # Usuarios del servidor o counter
+NEW_TAB_USER_TIPO_7     = NEW_DATA + 'Tipo_7.txt'                     # Usuarios del servidor o counter
 
                                                      # Ruta      Base de datos
 NEW_AUTO_USER_TIPO_1     = DATA + 'Autorizaciones/Tipo_1.txt'        # Usuarios del servidor o counter
@@ -283,3 +285,5 @@ NEW_AUTO_USER_TIPO_2     = DATA + 'Autorizaciones/Tipo_2.txt'        # Usuarios 
 NEW_AUTO_USER_TIPO_3     = DATA + 'Autorizaciones/Tipo_3.txt'        # Usuarios del servidor o counter
 NEW_AUTO_USER_TIPO_4     = DATA + 'Autorizaciones/Tipo_4.txt'        # Usuarios del servidor o counter
 NEW_AUTO_USER_TIPO_5     = DATA + 'Autorizaciones/Tipo_5.txt'        # Usuarios del servidor o counter
+NEW_AUTO_USER_TIPO_6     = DATA + 'Autorizaciones/Tipo_6.txt'        # Usuarios del servidor o counter
+NEW_AUTO_USER_TIPO_7     = DATA + 'Autorizaciones/Tipo_7.txt'        # Usuarios del servidor o counter

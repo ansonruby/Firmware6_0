@@ -19,8 +19,8 @@ fixed_urls = {
 
 
 def send_petition(url, method="GET", params=None, data={}, json_data={}, headers={}, timeout=petition_time_out):
-    hub_headers = {"FUSEACCESS_ID": Get_ID_Dispositivo(),
-                   "TIME_SCAN": str(int(time.time()*1000))}
+    hub_headers = {"FUSEACCESS-ID": Get_ID_Dispositivo(),
+                   "TIME-SCAN": str(int(time.time()*1000))}
     response = None
     petition_url = url
     if url in fixed_urls:
