@@ -34,7 +34,7 @@ def Filtro_Tipos_QR_Antiguo(access_code, medio_acceso=1, lectora=0):
             }, lectora)
 
 
-def Filtro_Tipos_Acceso(access_code, medio_acceso=1, lectora=0):
+def Filtro_Tipos_Acceso(access_code, medio_acceso, lectora):
     try:
         tipo_acceso = False
         # Validaciones QR Antiguo

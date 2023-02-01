@@ -8,7 +8,7 @@ import re
 import time
 import datetime
 
-config_access = "Accesos"  # "Accesos" o "Acceso dinamico" o "Acceso fisico"
+config_access = "Acceso fisico"  # "Accesos" o "Acceso dinamico" o "Acceso fisico"
 
 
 def Validar_Acceso(access_code, tipo_acceso, medio_acceso, lectora):
@@ -68,9 +68,11 @@ def Validar_QR(access_code, tipo_acceso, lectora):
     if tipo_acceso in [1, 2, 4, 5]:
 
         # Tiempo de lectura excedido (milisegundos)
+        """
         time_diff = read_time-qr_time
         if time_diff <= 0 or time_diff > 1000 * 8:
             return False
+        """
 
         # Dia de la semana incorrecto => F0 - FF (Lunes a domingo)
         weekdays = ["F0", "FA", "FB", "FC", "FD", "FE", "FF"]
