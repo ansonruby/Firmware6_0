@@ -1,6 +1,7 @@
 from Lib_Rout import *
 from Lib_File import Get_File
 from Fun_Dispositivo import Get_ID_Dispositivo
+from Lib_settings import *  # importar con los mismos nombres
 import requests
 import time
 
@@ -19,8 +20,8 @@ fixed_urls = {
 
 
 def send_petition(url, method="GET", params=None, data={}, json_data={}, headers={}, timeout=petition_time_out):
-    hub_headers = {"FUSEACCESS_ID": Get_ID_Dispositivo(),
-                   "TIME_SCAN": str(int(time.time()*1000))}
+    hub_headers = {"FUSEACCESS-ID": Get_ID_Dispositivo(),
+                   "TIME-SCAN": str(int(time.time()*1000))}
     response = None
     petition_url = url
     if url in fixed_urls:
@@ -42,9 +43,10 @@ def send_petition(url, method="GET", params=None, data={}, json_data={}, headers
 
 
 def Get_Rout_server():
-    mejor_opcion = Get_File(S0+CONF_M_CONEX_SERVER).strip()
-    IP_Ser = Get_File(S0+CONF_IP_SERVER).strip()
-    Domi_Ser = Get_File(S0+CONF_DOMI_SERVER).strip()
+    Domi_Ser, IP_Ser, mejor_opcion = Get_Pat_Server()
+    #mejor_opcion = Get_File(S0+CONF_M_CONEX_SERVER).strip()
+    #IP_Ser = Get_File(S0+CONF_IP_SERVER).strip()
+    #Domi_Ser = Get_File(S0+CONF_DOMI_SERVER).strip()
 
     opciones = {'0': 'http://' + IP_Ser,
                 '1': 'http://' + Domi_Ser,
@@ -62,9 +64,11 @@ def Get_Rout_server():
                 '1101': 'https://' + IP_Ser,
                 '1110': 'https://' + IP_Ser,
                 '1111': 'https://' + IP_Ser}
-
+    #return 'http://staging.fusepong.com'
     # return 'https://solutions.fusepong.com'
-    # return 'http://192.168.0.46:3000'
+    #return 'http://192.168.0.46:3000'
+    #return 'http://192.168.0.37:3000'
+    #return 'http://35.88.204.191'
     return opciones[mejor_opcion]
 
 

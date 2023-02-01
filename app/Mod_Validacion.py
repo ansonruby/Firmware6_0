@@ -8,7 +8,7 @@ import re
 import time
 import datetime
 
-config_access = "Accesos"  # "Accesos" o "Acceso dinamico" o "Acceso fisico"
+config_access = "Acceso fisico"  # "Accesos" o "Acceso dinamico" o "Acceso fisico"
 
 
 def Validar_Acceso(access_code, tipo_acceso, medio_acceso, lectora):
@@ -35,6 +35,7 @@ def Validar_Acceso(access_code, tipo_acceso, medio_acceso, lectora):
 def Validar_QR_Antiguo(access_data, tipo_acceso, medio_acceso, lectora):
     Respaldo_Online({
         "access_type": tipo_acceso,
+        "access_medium": medio_acceso,
         "data": "<" + ".".join(access_data) + ">",
         "old_qr_code": True
     }, lectora)
@@ -67,9 +68,11 @@ def Validar_QR(access_code, tipo_acceso, lectora):
     if tipo_acceso in [1, 2, 4, 5]:
 
         # Tiempo de lectura excedido (milisegundos)
+        """
         time_diff = read_time-qr_time
         if time_diff <= 0 or time_diff > 1000 * 8:
             return False
+        """
 
         # Dia de la semana incorrecto => F0 - FF (Lunes a domingo)
         weekdays = ["F0", "FA", "FB", "FC", "FD", "FE", "FF"]
@@ -240,14 +243,14 @@ def Definir_Direccion(access_key, user_index, lectora):
                 users_in_json[str(access_key)] = [user_index, "1"]
             elif str(access_key) in users_in_json:
                 users_in_json.pop(str(access_key))
-            
+
             users_in = json.dumps(users_in_json, indent=4)
             with open(S0+TAB_USER_IN, 'w') as dfw:
                 dfw.write(users_in)
                 dfw.close()
 
         return str(lectora % 2)
-        
+
     elif config_access == "Acceso dinamico":
         if access_key and access_key != "":
             users_in = ""
