@@ -3,9 +3,8 @@
 #----      importar complementos                    ----
 #-------------------------------------------------------
 import time
-#import threading
-
-#from threading import Thread
+import threading
+from threading import Thread
 
 import RPi.GPIO as GPIO #Libreria Python GPIO
 
@@ -131,10 +130,10 @@ class ACTUADOR_RELES(object):
                 self.Direcion_Rele(Comando)
     #-----------------------------------------------------------
     def Inicio_Rele(self):
-        #self.th_swrite = Thread(target=self.Ciclo_Rele)
+        self.th_swrite = Thread(target=self.Ciclo_Rele)
         #self.th_swrite.daemon = True
-        #self.th_swrite.start()
-        Create_Thread_Daemon(self.Ciclo_Rele,self)
+        self.th_swrite.start()
+        #Create_Thread_Daemon(self.Ciclo_Rele,self)
 
 
 #-----------------------------------------------------------

@@ -377,7 +377,8 @@ def Enviar_Respuesta(user_index, tipo_acceso, medio_acceso, lectora, direction_r
     ]
 
     # Envio modulo respuesta
-    Set_File(S0+comand_res[lectora], respuesta_acceso)
+    #Set_File(S0+comand_res[lectora], respuesta_acceso)    
+    Set_File(os.path.join(FIRM,HUB,comand_res[lectora]), respuesta_acceso)
 
 
 def Respaldo_Online(data, lectora):
@@ -408,4 +409,5 @@ def Respaldo_Online(data, lectora):
     ]
 
     # Envio modulo respuesta
-    Set_File(S0+comand_res[lectora], respuesta_acceso)
+    Set_File(os.path.join(FIRM,HUB,comand_res[lectora]), respuesta_acceso)
+    #Set_File(S0+comand_res[lectora], respuesta_acceso)
