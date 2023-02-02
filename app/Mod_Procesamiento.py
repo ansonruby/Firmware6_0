@@ -54,7 +54,7 @@ def Filtro_Tipos_Acceso(access_code, medio_acceso, lectora):
                 tipo_acceso = int(filter_access_code[0])
                 access_code = filter_access_code[1:]
 
-        # Tipo 7 pin: 
+        # Tipo 7 pin:
         elif medio_acceso == 2:
             tipo_acceso = 7
 
@@ -75,6 +75,24 @@ def Filtro_Tipos_Acceso(access_code, medio_acceso, lectora):
 
 def Recibir_Codigo_Accesso():
     # Medio de acceso 1:QR
+
+
+    if Get_File(os.path.join(FIRM,HUB,STATUS_QR)) == '1':
+        Create_Thread_Daemon(Filtro_Tipos_Acceso,
+                             Get_File(os.path.join(FIRM,HUB,COM_QR)), 1, 0)
+        Clear_File(os.path.join(FIRM,HUB,STATUS_QR))
+
+    if Get_File(os.path.join(FIRM,HUB,STATUS_QR_S1)) == '1':
+        Create_Thread_Daemon(Filtro_Tipos_Acceso,
+                            Get_File(os.path.join(FIRM,HUB,COM_QR_S1)), 1, 1)
+        Clear_File(os.path.join(FIRM,HUB,STATUS_QR_S1))
+
+    if Get_File(os.path.join(FIRM,HUB,STATUS_QR_S2)) == '1':
+        Create_Thread_Daemon(Filtro_Tipos_Acceso,
+                            Get_File(os.path.join(FIRM,HUB,COM_QR_S2)), 1, 2)
+        Clear_File(os.path.join(FIRM,HUB,STATUS_QR_S2))
+
+    """
     if Get_File(S0+STATUS_QR) == '1':
         Create_Thread_Daemon(Filtro_Tipos_Acceso,
                              Get_File(S0+COM_QR), 1, 0)
@@ -121,6 +139,7 @@ def Recibir_Codigo_Accesso():
         Create_Thread_Daemon(Filtro_Tipos_Acceso,
                              Get_File(S0+COM_NFC_S2), 11, 2)
         Clear_File(S0+STATUS_NFC_S2)
+    """
 
 
 while True:

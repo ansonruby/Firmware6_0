@@ -31,7 +31,7 @@ from lib.Lib_settings import *  # importar con los mismos nombres
 #                       CONTANTES
 #-----------------------------------------------------------
 
-MR_Mensajes = 0     # 0: NO print  1: Print
+MR_Mensajes = 1     # 0: NO print  1: Print
 Config_Mod  = Get_Mod_Respuesta()
 Tiempo_stop = float(Config_Mod['Time_Sleep_Mod'])
 #---------------------------------------------------------
