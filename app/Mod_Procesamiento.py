@@ -77,74 +77,45 @@ def Filtro_Tipos_Acceso(access_code, medio_acceso, lectora):
 
 
 def Recibir_Codigo_Accesso():
+
     # Medio de acceso 1:QR
-
-
-    if Get_File(os.path.join(FIRM,HUB,STATUS_QR)) == '1':
-        Create_Thread_Daemon(Filtro_Tipos_Acceso,
-                             Get_File(os.path.join(FIRM,HUB,COM_QR)), 1, 0)
-        Clear_File(os.path.join(FIRM,HUB,STATUS_QR))
-
-    if Get_File(os.path.join(FIRM,HUB,STATUS_QR_S1)) == '1':
-        Create_Thread_Daemon(Filtro_Tipos_Acceso,
-                            Get_File(os.path.join(FIRM,HUB,COM_QR_S1)), 1, 1)
-        Clear_File(os.path.join(FIRM,HUB,STATUS_QR_S1))
-
-    if Get_File(os.path.join(FIRM,HUB,STATUS_QR_S2)) == '1':
-        Create_Thread_Daemon(Filtro_Tipos_Acceso,
-                            Get_File(os.path.join(FIRM,HUB,COM_QR_S2)), 1, 2)
-        Clear_File(os.path.join(FIRM,HUB,STATUS_QR_S2))
-
-    """
-    if Get_File(S0+STATUS_QR) == '1':
-        Create_Thread_Daemon(Filtro_Tipos_Acceso,
-                             Get_File(S0+COM_QR), 1, 0)
-        Clear_File(S0+STATUS_QR)
-
-    if Get_File(S0+STATUS_QR_S1) == '1':
-        Create_Thread_Daemon(Filtro_Tipos_Acceso,
-                             Get_File(S0+COM_QR_S1), 1, 1)
-        Clear_File(S0+STATUS_QR_S1)
-
-    if Get_File(S0+STATUS_QR_S2) == '1':
-        Create_Thread_Daemon(Filtro_Tipos_Acceso,
-                             Get_File(S0+COM_QR_S2), 1, 2)
-        Clear_File(S0+STATUS_QR_S2)
+    qr_read_paths = [
+        (STATUS_QR, COM_QR),
+        (STATUS_QR_S1, COM_QR_S1),
+        (STATUS_QR_S2, COM_QR_S2)
+    ]
 
     # Medio de acceso 2:PIN
-    if Get_File(S0+STATUS_TECLADO) == '1':
-        Create_Thread_Daemon(Filtro_Tipos_Acceso,
-                             Get_File(S0+COM_TECLADO), 2, 0)
-        Clear_File(S0+STATUS_TECLADO)
-
-    if Get_File(S0+STATUS_TECLADO_S1) == '1':
-        Create_Thread_Daemon(Filtro_Tipos_Acceso,
-                             Get_File(S0+COM_TECLADO_S1), 2, 1)
-        Clear_File(S0+STATUS_TECLADO_S1)
-
-    if Get_File(S0+STATUS_TECLADO_S2) == '1':
-        Create_Thread_Daemon(Filtro_Tipos_Acceso,
-                             Get_File(S0+COM_TECLADO_S2), 2, 2)
-        Clear_File(S0+STATUS_TECLADO_S2)
+    keyboard_read_paths = [
+        (STATUS_TECLADO, COM_TECLADO),
+        (STATUS_TECLADO_S1, COM_TECLADO_S1),
+        (STATUS_TECLADO_S2, COM_TECLADO_S2)
+    ]
 
     # Medio de acceso 5-11:NFC
-    if Get_File(S0+STATUS_NFC) == '1':
-        Create_Thread_Daemon(Filtro_Tipos_Acceso,
-                             Get_File(S0+COM_NFC), 11, 0)
-        Clear_File(S0+STATUS_NFC)
+    nfc_read_paths = [
+        (STATUS_NFC, COM_NFC),
+        (STATUS_NFC_S1, COM_NFC_S1),
+        (STATUS_NFC_S2, COM_NFC_S2)
+    ]
 
-    if Get_File(S0+STATUS_NFC_S1) == '1':
-        Create_Thread_Daemon(Filtro_Tipos_Acceso,
-                             Get_File(S0+COM_NFC_S1), 11, 1)
-        Clear_File(S0+STATUS_NFC_S1)
+    read_paths = []
+    if "Lectura_QR" in Configs and str(Configs["Lectura_QR"]).lower() == "true":
+        read_paths += qr_read_paths
+    if "Lectura_Teclado" in Configs and str(Configs["Lectura_Teclado"]).lower() == "true":
+        read_paths += keyboard_read_paths
+    if "Lectura_NFC" in Configs and str(Configs["Lectura_NFC"]).lower() == "true":
+        read_paths += nfc_read_paths
 
-    if Get_File(S0+STATUS_NFC_S2) == '1':
-        Create_Thread_Daemon(Filtro_Tipos_Acceso,
-                             Get_File(S0+COM_NFC_S2), 11, 2)
-        Clear_File(S0+STATUS_NFC_S2)
-    """
+    for lectora, (status, command) in enumerate(read_paths):
+        if Get_File(os.path.join(FIRM, HUB, status)) == '1':
+            Create_Thread_Daemon(Filtro_Tipos_Acceso,
+                                 Get_File(os.path.join(FIRM, HUB, command)), 1, lectora % 3)
+            Clear_File(os.path.join(FIRM, HUB, status))
 
 
 while True:
-    time.sleep(0.05)
+    sleep_time = 0.5 if not "Time_Sleep_Mod" in Configs else float(
+        Configs["Time_Sleep_Mod"])
+    time.sleep(sleep_time)
     Recibir_Codigo_Accesso()

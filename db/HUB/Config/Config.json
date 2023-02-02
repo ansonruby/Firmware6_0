@@ -28,7 +28,13 @@
             "Usuarios_Time": "05:38 PM",
             "Usuarios_Inicio": "True"
         },
-    "Mod_Procesamiento": {},
+    "Mod_Procesamiento": 
+        {
+            "Time_Sleep_Mod": "0.3",
+            "Lectura_QR":"True",
+            "Lectura_Teclado":"True",
+            "Lectura_NFC":"True"
+        },
     "Mod_Respuesta":
         {
             "Time_Sleep_Mod": "0.5"
