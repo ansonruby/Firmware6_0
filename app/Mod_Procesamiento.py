@@ -2,8 +2,11 @@ from lib.Lib_File import Clear_File, Get_File
 from lib.Lib_Rout import *
 from lib.Lib_Threads import Create_Thread_Daemon
 from Mod_Validacion import Validar_QR_Antiguo, Validar_Acceso, Respaldo_Online
+from lib.Lib_settings import Get_Mod_Procesamiento
 import re
 import time
+
+Configs = Get_Mod_Procesamiento()
 
 
 def Filtro_Tipos_QR_Antiguo(access_code, medio_acceso=1, lectora=0):
@@ -54,7 +57,7 @@ def Filtro_Tipos_Acceso(access_code, medio_acceso, lectora):
                 tipo_acceso = int(filter_access_code[0])
                 access_code = filter_access_code[1:]
 
-        # Tipo 7 pin: 
+        # Tipo 7 pin:
         elif medio_acceso == 2:
             tipo_acceso = 7
 

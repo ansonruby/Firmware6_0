@@ -3,6 +3,7 @@ from lib.Lib_File import Get_File, Set_File, Add_Line_End, Get_Line
 from lib.Fun_Tipo_NFC import MD5
 from lib.Lib_Binary_Search import Binary_Search_Id, Binary_Remove_Id
 from lib.Lib_Request_Json import send_petition
+from lib.Lib_settings import Get_Mod_Validacion
 import json
 import re
 import time

@@ -43,6 +43,14 @@ def Get_Mod_Actualizaciones():
 	data = Get_File_Json(CONF_HUB)
 	return data["Mod_Actualizaciones"]
 #---------------------------------------------------------------------------------------
+def Get_Mod_Procesamiento():
+	data = Get_File_Json(CONF_HUB)
+	return data["Mod_Procesamiento"]
+#---------------------------------------------------------------------------------------
+def Get_Mod_Validacion():
+	data = Get_File_Json(CONF_HUB)
+	return data["Mod_Validacion"]
+#---------------------------------------------------------------------------------------
 def Get_Mod_Respuesta():
 	data = Get_File_Json(CONF_HUB)
 	return data["Mod_Respuesta"]
