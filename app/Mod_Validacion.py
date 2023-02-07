@@ -429,7 +429,7 @@ def get_location_of_reader(lectora):
     }
 
     for reader in Lectoras:
-        if "Puerto" in reader and "Locacion" in reader and int(reader["puerto"]) == int(lectora):
+        if "Puerto" in reader and "Locacion" in reader and int(reader["Puerto"]) == int(lectora):
             return locations[reader["Locacion"]]
 
     return S0
