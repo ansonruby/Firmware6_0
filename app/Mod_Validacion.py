@@ -3,13 +3,19 @@ from lib.Lib_File import Get_File, Set_File, Add_Line_End, Get_Line
 from lib.Fun_Tipo_NFC import MD5
 from lib.Lib_Binary_Search import Binary_Search_Id, Binary_Remove_Id
 from lib.Lib_Request_Json import send_petition
-from lib.Lib_settings import Get_Mod_Validacion
+from lib.Lib_settings import Get_Mod_Validacion, Get_Lectoras
 import json
 import re
 import time
 import datetime
 
+Configs = Get_Mod_Validacion()
+Lectoras = Get_Lectoras()
+
 config_access = "Acceso fisico"  # "Accesos" o "Acceso dinamico" o "Acceso fisico"
+
+if "Configuracion_Acceso" in Configs:
+    config_access = Configs["Configuracion_Acceso"]
 
 
 def Validar_Acceso(access_code, tipo_acceso, medio_acceso, lectora):
@@ -365,6 +371,12 @@ def Enviar_Respuesta(user_index, tipo_acceso, medio_acceso, lectora, direction_r
             NEW_AUTO_USER_TIPO_6,
             NEW_AUTO_USER_TIPO_7
         ]
+        locations = {
+            "S0": S0,
+            "S1": S1,
+            "S2": S2
+        }
+        
         Add_Line_End(
             S0+tabs_autorizaciones[tipo_acceso-1],
             athorization_code+"\n"
@@ -377,8 +389,8 @@ def Enviar_Respuesta(user_index, tipo_acceso, medio_acceso, lectora, direction_r
     ]
 
     # Envio modulo respuesta
-    #Set_File(S0+comand_res[lectora], respuesta_acceso)    
-    Set_File(os.path.join(FIRM,HUB,comand_res[lectora]), respuesta_acceso)
+    #Set_File(S0+comand_res[lectora], respuesta_acceso)
+    Set_File(os.path.join(FIRM, HUB, comand_res[lectora]), respuesta_acceso)
 
 
 def Respaldo_Online(data, lectora):
@@ -409,5 +421,6 @@ def Respaldo_Online(data, lectora):
     ]
 
     # Envio modulo respuesta
-    Set_File(os.path.join(FIRM,HUB,comand_res[lectora]), respuesta_acceso)
-    #Set_File(S0+comand_res[lectora], respuesta_acceso)
+    Set_File(os.path.join(FIRM, HUB, comand_res[lectora]), respuesta_acceso)
+
+

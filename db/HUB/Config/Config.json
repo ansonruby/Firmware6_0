@@ -43,7 +43,10 @@
         {
             "Time_Sleep_Mod": "0.5"
         },
-    "Mod_Validacion": {},
+    "Mod_Validacion": 
+        {
+            "Configuracion_Acceso": "Acceso fisico"
+        },
     "Reles": [
         {
             "Locacion": "S0",
