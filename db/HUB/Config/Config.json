@@ -26,7 +26,8 @@
             "Time_Sleep_Mod": "2",
             "Usuarios_Periodo": "False",
             "Usuarios_Time": "05:38 PM",
-            "Usuarios_Inicio": "True"
+            "Usuarios_Inicio": "True",
+            "Actualizaciones_Periodo": "10"
         },
     "Mod_Procesamiento": 
         {
@@ -56,7 +57,7 @@
             "Tipo": "Rele"
         },
         {
-            "Locacion":"S1",
+            "Locacion":"S0",
             "Puerto": "1",
             "Direccion": "D",
             "Tiempo": "1",
