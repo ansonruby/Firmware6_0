@@ -75,11 +75,9 @@ def Validar_QR(access_code, tipo_acceso, lectora):
     if tipo_acceso in [1, 2, 4, 5]:
 
         # Tiempo de lectura excedido (milisegundos)
-        """
         time_diff = read_time-qr_time
         if time_diff <= 0 or time_diff > 1000 * 8:
             return False
-        """
 
         # Dia de la semana incorrecto => F0 - FF (Lunes a domingo)
         weekdays = ["F0", "FA", "FB", "FC", "FD", "FE", "FF"]
@@ -93,8 +91,8 @@ def Validar_QR(access_code, tipo_acceso, lectora):
         NEW_TAB_USER_TIPO_4,
         NEW_TAB_USER_TIPO_5
     ]
-
-    file_db = S0+tabs_users[tipo_acceso-1]
+    location = get_location_of_reader(lectora)
+    file_db = location+tabs_users[tipo_acceso-1]
     access_index = False
     access_index = Binary_Search_Id(file_db, user_index)
 
@@ -178,7 +176,8 @@ def Validar_QR(access_code, tipo_acceso, lectora):
 def Validar_PIN(access_code, tipo_acceso, lectora):
     pin_index = access_code[:-4]
     encrypt_pin = MD5(access_code[-4:])
-    file_db = S0+NEW_TAB_USER_TIPO_7
+    location = get_location_of_reader(lectora)
+    file_db = location+NEW_TAB_USER_TIPO_7
 
     access_index = Binary_Search_Id(file_db, pin_index)
 
@@ -230,9 +229,10 @@ def Validar_PIN(access_code, tipo_acceso, lectora):
 def Validar_NFC(access_code, tipo_acceso, lectora):
     valid_access = False
     access_key = False
+    location = get_location_of_reader(lectora)
     if tipo_acceso == 6:
         access_key = MD5(access_code)
-        db = Get_File(S0+TAB_USER_TIPO_6).strip().split("\n")
+        db = Get_File(location+TAB_USER_TIPO_6).strip().split("\n")
         for access_db in db:
             if access_db == "":
                 continue
@@ -275,11 +275,11 @@ def Validar_NFC(access_code, tipo_acceso, lectora):
 
 def Buscar_usuario_adentro(access_key, lectora):
     global config_access
-
+    location = get_location_of_reader(lectora)
     if (config_access == "Acceso fisico" and lectora % 2) or config_access == "Acceso dinamico":
         if access_key and access_key != "":
             users_in = ""
-            with open(S0+TAB_USER_IN, 'r') as df:
+            with open(location+TAB_USER_IN, 'r') as df:
                 users_in = df.read().strip()
                 df.close()
             try:
@@ -297,13 +297,14 @@ def Definir_Direccion(access_key, user_index, lectora):
     global config_access
 
     direction = "0"
+    location = get_location_of_reader(lectora)
 
     if config_access == "Accesos":
         return direction
     elif config_access == "Acceso fisico":
         if access_key and access_key != "":
             users_in = ""
-            with open(S0+TAB_USER_IN, 'r') as df:
+            with open(location+TAB_USER_IN, 'r') as df:
                 users_in = df.read().strip()
                 df.close()
             try:
@@ -317,7 +318,7 @@ def Definir_Direccion(access_key, user_index, lectora):
                 users_in_json.pop(str(access_key))
 
             users_in = json.dumps(users_in_json, indent=4)
-            with open(S0+TAB_USER_IN, 'w') as dfw:
+            with open(location+TAB_USER_IN, 'w') as dfw:
                 dfw.write(users_in)
                 dfw.close()
 
@@ -326,7 +327,7 @@ def Definir_Direccion(access_key, user_index, lectora):
     elif config_access == "Acceso dinamico":
         if access_key and access_key != "":
             users_in = ""
-            with open(S0+TAB_USER_IN, 'r') as df:
+            with open(location+TAB_USER_IN, 'r') as df:
                 users_in = df.read().strip()
                 df.close()
             try:
@@ -341,7 +342,7 @@ def Definir_Direccion(access_key, user_index, lectora):
                 users_in_json[str(access_key)] = [user_index, "1"]
             users_in = json.dumps(users_in_json, indent=4)
 
-            with open(S0+TAB_USER_IN, 'w') as dfw:
+            with open(location+TAB_USER_IN, 'w') as dfw:
                 dfw.write(users_in)
                 dfw.close()
 
@@ -371,14 +372,9 @@ def Enviar_Respuesta(user_index, tipo_acceso, medio_acceso, lectora, direction_r
             NEW_AUTO_USER_TIPO_6,
             NEW_AUTO_USER_TIPO_7
         ]
-        locations = {
-            "S0": S0,
-            "S1": S1,
-            "S2": S2
-        }
-        
+        location = get_location_of_reader(lectora)
         Add_Line_End(
-            S0+tabs_autorizaciones[tipo_acceso-1],
+            location+tabs_autorizaciones[tipo_acceso-1],
             athorization_code+"\n"
         )
 
@@ -389,7 +385,6 @@ def Enviar_Respuesta(user_index, tipo_acceso, medio_acceso, lectora, direction_r
     ]
 
     # Envio modulo respuesta
-    #Set_File(S0+comand_res[lectora], respuesta_acceso)
     Set_File(os.path.join(FIRM, HUB, comand_res[lectora]), respuesta_acceso)
 
 
@@ -424,3 +419,17 @@ def Respaldo_Online(data, lectora):
     Set_File(os.path.join(FIRM, HUB, comand_res[lectora]), respuesta_acceso)
 
 
+def get_location_of_reader(lectora):
+    global Lectoras
+
+    locations = {
+        "S0": S0,
+        "S1": S1,
+        "S2": S2
+    }
+
+    for reader in Lectoras:
+        if "Puerto" in reader and "Locacion" in reader and int(reader["puerto"]) == int(lectora):
+            return locations[reader["Locacion"]]
+
+    return S0
