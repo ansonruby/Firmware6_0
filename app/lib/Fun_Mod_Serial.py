@@ -375,7 +375,7 @@ class LECTORAS(object):
     def Enrutar_Archivos_Salida(self):
         #print  self.Sede, self.Canal
 
-        if    self.Canal == '0':
+        if self.Canal in ['0', '3']:
             self.Lectura_COM_QR      = os.path.join(FIRM,HUB,COM_QR)
             self.Lectura_STATUS_QR   = os.path.join(FIRM,HUB,STATUS_QR)
         elif  self.Canal == '1':

@@ -8,6 +8,7 @@ import json
 import re
 import time
 import datetime
+import os
 
 Configs = Get_Mod_Validacion()
 Lectoras = Get_Lectoras()
