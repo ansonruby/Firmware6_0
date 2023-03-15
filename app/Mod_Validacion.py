@@ -276,7 +276,7 @@ def Validar_NFC(access_code, tipo_acceso, lectora):
 def Buscar_usuario_adentro(access_key, lectora):
     global config_access
     location = get_location_of_reader(lectora)
-    if (config_access == "Acceso fisico" and lectora % 2) or config_access == "Acceso dinamico":
+    if (config_access == "Acceso fisico" and get_direction_of_reader(lectora)) or config_access == "Acceso dinamico":
         if access_key and access_key != "":
             users_in = ""
             with open(location+TAB_USER_IN, 'r') as df:
@@ -312,17 +312,17 @@ def Definir_Direccion(access_key, user_index, lectora):
             except Exception as e:
                 users_in_json = {}
 
-            if lectora % 2 == 0:
-                users_in_json[str(access_key)] = [user_index, "1"]
-            elif str(access_key) in users_in_json:
+            if get_direction_of_reader(lectora) and str(access_key) in users_in_json:
                 users_in_json.pop(str(access_key))
+            else:
+                users_in_json[str(access_key)] = [user_index, "1"]
 
             users_in = json.dumps(users_in_json, indent=4)
             with open(location+TAB_USER_IN, 'w') as dfw:
                 dfw.write(users_in)
                 dfw.close()
 
-        return str(lectora % 2)
+        return str(get_direction_of_reader(lectora))
 
     elif config_access == "Acceso dinamico":
         if access_key and access_key != "":
@@ -433,3 +433,16 @@ def get_location_of_reader(lectora):
             return locations[reader["Locacion"]]
 
     return S0
+
+
+def get_direction_of_reader(lectora):
+    global Lectoras
+
+    for reader in Lectoras:
+        if "Puerto" in reader and "Direccion" in reader and int(reader["Puerto"]) == int(lectora):
+            return reader["Direccion"] == "EXIT"
+
+    # 0 for entrys
+    # 1 for exits
+
+    return int(lectora) % 2

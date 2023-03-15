@@ -13,12 +13,14 @@
         {
             "Locacion": "S0",
             "Nombre": "QR600-VHK-E",
-            "Puerto": "0"
+            "Puerto": "0",
+            "Direccion":"ENTRY"
         },
         {
             "Locacion":"S0",
             "Nombre": "QR600-VHK-E",
-            "Puerto": "1"
+            "Puerto": "1",
+            "Direccion":"EXIT"
         }
     ],
     "Mod_Actualizaciones":
