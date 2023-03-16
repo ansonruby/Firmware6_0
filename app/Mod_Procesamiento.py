@@ -33,8 +33,11 @@ def Filtro_Tipos_QR_Antiguo(access_code, medio_acceso=1, lectora=0):
         else:
             Respaldo_Online({
                 "access_medium": medio_acceso,
-                "access_code": access_code
+                "access_code": access_code,
+                "data":access_code,
+                "old_qr_code": True
             }, lectora)
+            break
 
 
 def Filtro_Tipos_Acceso(access_code, medio_acceso, lectora):
