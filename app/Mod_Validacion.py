@@ -392,24 +392,27 @@ def Enviar_Respuesta(user_index, tipo_acceso, medio_acceso, lectora, direction_r
 
 def Respaldo_Online(data, lectora):
     respuesta_acceso = "Access denied"
-    respuesta_server = False
-    if "old_qr_code" in data:
-        respuesta_server = send_petition(
-            "grant", method="POST", json_data=data, timeout=10)
-        if respuesta_server and respuesta_server.ok:
-            respuesta_acceso = respuesta_server.text
-            respuesta_acceso = respuesta_acceso if "Access granted" in respuesta_acceso else "Access denied"
-    else:
-        respuesta_server = send_petition(
-            "online_backup", method="POST", json_data=data)
-        if respuesta_server and respuesta_server.ok:
-            respuesta_server = respuesta_server.json()
-            if "Access granted" in respuesta_server["access_answer"]:
-                respuesta_acceso = respuesta_server["access_answer"]
-                Definir_Direccion(
-                    respuesta_server["user_id"], respuesta_server["user_index"], lectora)
-            else:
-                respuesta_acceso = respuesta_server["access_answer"]
+    try:
+        respuesta_server = False
+        if "old_qr_code" in data:
+            respuesta_server = send_petition(
+                "grant", method="POST", json_data=data, timeout=10)
+            if respuesta_server and respuesta_server.ok:
+                respuesta_acceso = respuesta_server.text
+                respuesta_acceso = respuesta_acceso if "Access granted" in respuesta_acceso else "Access denied"
+        else:
+            respuesta_server = send_petition(
+                "online_backup", method="POST", json_data=data)
+            if respuesta_server and respuesta_server.ok:
+                respuesta_server = respuesta_server.json()
+                if "Access granted" in respuesta_server["access_answer"]:
+                    respuesta_acceso = respuesta_server["access_answer"]
+                    Definir_Direccion(
+                        respuesta_server["user_id"], respuesta_server["user_index"], lectora)
+                else:
+                    respuesta_acceso = respuesta_server["access_answer"]
+    except:
+        pass
 
     comand_res = [
         COM_RES,
