@@ -41,8 +41,8 @@ def Filtro_Tipos_QR_Antiguo(access_code, medio_acceso=1, lectora=0):
 
 
 def Filtro_Tipos_Acceso(access_code, medio_acceso, lectora):
+    tipo_acceso = None
     try:
-        tipo_acceso = False
         # Validaciones QR Antiguo
         if re.search("<(.*?)>", access_code):
             Filtro_Tipos_QR_Antiguo(access_code, medio_acceso, lectora)
@@ -77,6 +77,7 @@ def Filtro_Tipos_Acceso(access_code, medio_acceso, lectora):
         Respaldo_Online({
             "access_medium": medio_acceso,
             "access_code": access_code,
+            "access_type":tipo_acceso,
             "reader": lectora
         }, lectora)
 
