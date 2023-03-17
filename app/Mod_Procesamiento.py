@@ -71,13 +71,13 @@ def Filtro_Tipos_Acceso(access_code, medio_acceso, lectora):
             Respaldo_Online({
                 "access_medium": medio_acceso,
                 "access_code": access_code,
-                "lectora": lectora
+                "reader": lectora
             }, lectora)
     except Exception as e:
         Respaldo_Online({
             "access_medium": medio_acceso,
             "access_code": access_code,
-            "lectora": lectora
+            "reader": lectora
         }, lectora)
 
 

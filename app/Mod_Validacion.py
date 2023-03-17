@@ -37,7 +37,7 @@ def Validar_Acceso(access_code, tipo_acceso, medio_acceso, lectora):
             "access_type": tipo_acceso,
             "access_medium": medio_acceso,
             "access_code": access_code,
-            "lectora": lectora
+            "reader": lectora
         }, lectora)
 
 
