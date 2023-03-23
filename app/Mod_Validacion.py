@@ -404,12 +404,10 @@ def Respaldo_Online(data, lectora):
                 "online_backup", method="POST", json_data=data)
             if respuesta_server and respuesta_server.ok:
                 respuesta_server = respuesta_server.json()
+                respuesta_acceso = respuesta_server["access_answer"]
                 if "Access granted" in respuesta_server["access_answer"]:
-                    respuesta_acceso = respuesta_server["access_answer"]
                     Definir_Direccion(
                         respuesta_server["user_id"], respuesta_server["user_index"], lectora)
-                else:
-                    respuesta_acceso = respuesta_server["access_answer"]
     except:
         pass
 

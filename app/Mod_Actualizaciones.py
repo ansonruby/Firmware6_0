@@ -34,6 +34,7 @@ import os
 #---------------------------------
 from lib.Lib_Request_Json import *            # importar con los mismos nombres
 from lib.Fun_Dispositivo import *   #
+from lib.Lib_settings import Get_Mod_Actualizaciones
 
 #-----------------------------------------------------------
 #                       CONTANTES
