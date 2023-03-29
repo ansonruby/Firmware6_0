@@ -49,10 +49,10 @@ Config_Mod  = Get_Mod_Actualizaciones()
 Tiempo_stop = float(Config_Mod['Time_Sleep_Mod'])
 
 Bandera_Periodo_Usuario = 0
-Timepo_periodo_Usuarios=10
+Tiempo_periodo_Usuarios=10
 if Config_Mod['Usuarios_Periodo'] != "False":
     Bandera_Periodo_Usuario = 1
-    Timepo_periodo_Usuarios=int(Config_Mod['Usuarios_Periodo'])
+    Tiempo_periodo_Usuarios=int(Config_Mod['Usuarios_Periodo'])
 
 Bandera_Hora_Usuario = 0
 if Config_Mod['Usuarios_Time'] != "False":
@@ -209,7 +209,7 @@ while 1:
     #---------------------------------------------------------
     # Proceso 3: Actualizar base de datos por periodos de tiempos minimo 1 segundo,  60*1 ->1 minuto
     #---------------------------------------------------------
-    if Bandera_Periodo_Usuario: Periodo_Actualizacion_Usuarios(Timepo_periodo_Usuarios)
+    if Bandera_Periodo_Usuario: Periodo_Actualizacion_Usuarios(Tiempo_periodo_Usuarios)
     #---------------------------------------------------------
     #  Proceso 4:Enviar usuarios a servidor periodicamente si hay
     #---------------------------------------------------------
