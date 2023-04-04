@@ -7,9 +7,9 @@ import time
 petition_time_out = 60 * 60
 
 fixed_urls = {
-    "get_users": "/api/app/scan_devices/get_granted_accesess_hub",
+    "get_users": "/api/scan_devices/get_granted_access_hub",
     "grant": "/api/access/grant",
-    "send_autorizations": "/api/access/set_in_out_activity",
+    "send_autorizations": "/api/scan_devices/send_authorizations_hub",
     "3": "/api/access/verify_conection",
     "4": "/api/firmware/review_update",
     "5": "/api/firmware/confirm_update"
@@ -64,8 +64,8 @@ def Get_Rout_server():
                 '1111': 'https://' + IP_Ser}
 
     # return 'https://solutions.fusepong.com'
-    return 'http://192.168.0.46:3000'
-    # return opciones[mejor_opcion]
+    # return 'http://192.168.0.103:3000'
+    return opciones[mejor_opcion]
 
 
 # print send_petition("get_users")
