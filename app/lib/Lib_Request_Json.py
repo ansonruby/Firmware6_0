@@ -1,6 +1,6 @@
 from Lib_Rout import *
-from Lib_File import Get_File
 from Fun_Dispositivo import Get_ID_Dispositivo
+from Lib_settings import Get_Pat_Server
 import requests
 import time
 
@@ -10,6 +10,7 @@ fixed_urls = {
     "get_users": "/api/scan_devices/get_granted_access_hub",
     "grant": "/api/access/grant",
     "send_autorizations": "/api/scan_devices/send_authorizations_hub",
+    "online_backup": "/api/access/validate_access",
     "3": "/api/access/verify_conection",
     "4": "/api/firmware/review_update",
     "5": "/api/firmware/confirm_update"
@@ -19,8 +20,8 @@ fixed_urls = {
 
 
 def send_petition(url, method="GET", params=None, data={}, json_data={}, headers={}, timeout=petition_time_out):
-    hub_headers = {"FUSEACCESS_ID": Get_ID_Dispositivo(),
-                   "TIME_SCAN": str(int(time.time()*1000))}
+    hub_headers = {"FUSEACCESS-ID": Get_ID_Dispositivo(),
+                   "TIME-SCAN": str(int(time.time()*1000))}
     response = None
     petition_url = url
     if url in fixed_urls:
@@ -42,9 +43,7 @@ def send_petition(url, method="GET", params=None, data={}, json_data={}, headers
 
 
 def Get_Rout_server():
-    mejor_opcion = Get_File(S0+CONF_M_CONEX_SERVER).strip()
-    IP_Ser = Get_File(S0+CONF_IP_SERVER).strip()
-    Domi_Ser = Get_File(S0+CONF_DOMI_SERVER).strip()
+    Domi_Ser, IP_Ser, mejor_opcion = Get_Pat_Server()
 
     opciones = {'0': 'http://' + IP_Ser,
                 '1': 'http://' + Domi_Ser,

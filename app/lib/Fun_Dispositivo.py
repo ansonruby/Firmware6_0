@@ -2,7 +2,8 @@
 #---------------------------------------------------------------------------------------
 """
 
-Autor: Anderson Amaya Pulido
+Autor:  Luding Castaneda,
+        Anderson Amaya Pulido
 
 Libreria personal para procesar un qr.
 

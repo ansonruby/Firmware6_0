@@ -2,7 +2,8 @@
 #---------------------------------------------------------------------------------------
 """
 
-Autor: Anderson Amaya Pulido
+Autor:  Luding Castaneda,
+        Anderson Amaya Pulido
 
 Libreria personal para el manejo de rutas del aplicativo.
 
@@ -49,14 +50,14 @@ HUB                 = FIRM +'db/HUB/'                                           
 #---------------------------------------------------------------------------------------
 
 INF_FIRMWARE        = FIRM + 'README.md'                                            # Datos y contenido del repositorio git
-INF_VERCION         = CONF + 'Vercion/Vercion_Firmware.txt'                  # Datos de la vercion del Firmware
+INF_VERCION         = CONF + 'Vercion/Vercion_Firmware.txt'                         # Datos de la vercion del Firmware
 INF_DISPO           = DISP + 'Datos_Creacion.txt'                                   # Datos propios del dispositivo pieza 1 UUID
 KEY_DISPO           = DISP + 'Key.txt'                                              # Datos propios del dispositivo
 
 #---------------------------------------------------------------------------------------
 #                                  Firmware
 #---------------------------------------------------------------------------------------
-
+CONF_HUB            = HUB + CONF + 'Config.json'                      # Configuraciones del hub global
 COM_FIRMWARE        = COMMA + 'Firmware/Com_Firmware.txt'                    # Configuraciones personalizadas del Firmware
 
 #---------------------------------------------------------------------------------------
@@ -65,17 +66,17 @@ COM_FIRMWARE        = COMMA + 'Firmware/Com_Firmware.txt'                    # C
 
 #-------------- Tipos de qr
 
-TAB_USER_TIPO_1_1   = DATA + 'Tipo_1_1/Tabla_Usuarios.txt'                   # Usuarios del servidor o counter
-TAB_AUTO_TIPO_1_1   = DATA + 'Tipo_1_1/Tabla_Autorizados.txt'                # Registro de usuarios autorizados entrada y salida
-TAB_USER_TIPO_1     = DATA + 'Tipo_1/Tabla_Usuarios.txt'                     # Usuarios del servidor o counter
-TAB_AUTO_TIPO_1     = DATA + 'Tipo_1/Tabla_Autorizados.txt'                  # Registro de usuarios autorizados entrada y salida
-TAB_PINES_TIPO_1    = DATA + 'Tipo_1/Tabla_Pines.txt'                        # pines de usuarios generados
-TAB_USER_TIPO_2     = DATA + 'Tipo_2/Tabla_Usuarios.txt'                     # Usuarios del servidor o counter
-TAB_AUTO_TIPO_2     = DATA + 'Tipo_2/Tabla_Autorizados.txt'                  # Registro de usuarios autorizados entrada y salida
-TAB_USER_TIPO_2_1   = DATA + 'Tipo_2_1/Tabla_Usuarios.txt'                   # Usuarios del servidor o counter
-TAB_AUTO_TIPO_2_1   = DATA + 'Tipo_2_1/Tabla_Autorizados.txt'                # Registro de usuarios autorizados entrada y salida
-TAB_USER_TIPO_3     = DATA + 'Tipo_3/Tabla_Usuarios.txt'                     # Usuarios del servidor o counter
-TAB_AUTO_TIPO_3     = DATA + 'Tipo_3/Tabla_Autorizados.txt'                  # Registro de usuarios autorizados entrada y salida
+#TAB_USER_TIPO_1_1   = DATA + 'Tipo_1_1/Tabla_Usuarios.txt'                   # Usuarios del servidor o counter
+#TAB_AUTO_TIPO_1_1   = DATA + 'Tipo_1_1/Tabla_Autorizados.txt'                # Registro de usuarios autorizados entrada y salida
+#TAB_USER_TIPO_1     = DATA + 'Tipo_1/Tabla_Usuarios.txt'                     # Usuarios del servidor o counter
+#TAB_AUTO_TIPO_1     = DATA + 'Tipo_1/Tabla_Autorizados.txt'                  # Registro de usuarios autorizados entrada y salida
+#TAB_USER_TIPO_2     = DATA + 'Tipo_2/Tabla_Usuarios.txt'                     # Usuarios del servidor o counter
+#TAB_PINES_TIPO_1    = DATA + 'Tipo_1/Tabla_Pines.txt'                        # pines de usuarios generados
+#TAB_AUTO_TIPO_2     = DATA + 'Tipo_2/Tabla_Autorizados.txt'                  # Registro de usuarios autorizados entrada y salida
+#TAB_USER_TIPO_2_1   = DATA + 'Tipo_2_1/Tabla_Usuarios.txt'                   # Usuarios del servidor o counter
+#TAB_AUTO_TIPO_2_1   = DATA + 'Tipo_2_1/Tabla_Autorizados.txt'                # Registro de usuarios autorizados entrada y salida
+#TAB_USER_TIPO_3     = DATA + 'Tipo_3/Tabla_Usuarios.txt'                     # Usuarios del servidor o counter
+#TAB_AUTO_TIPO_3     = DATA + 'Tipo_3/Tabla_Autorizados.txt'                  # Registro de usuarios autorizados entrada y salida
 
 #-------------- Tipos de tag o targetas
 
@@ -98,11 +99,13 @@ COM_LED             = COMMA + 'Led_RGB/Com_Led.txt'                           # 
 #                                  Rele dual
 #---------------------------------------------------------------------------------------
 
-CONF_TIEM_RELE      = CONF + 'Rele/Tiempo_Rele.txt'                           # Configuracion rele
-CONF_DIREC_RELE     = CONF + 'Rele/Direccion_Rele.txt'                        # Configuracion Direccion rele
-CONF_COMU_RELE      = CONF + 'Rele/Tipo_Rele.txt'                             # Configuracion de tipo de relevos
-COM_TX_RELE         = COMMA + 'Rele/Com_Tx_Rele.txt'                          # Comando de comunicaiones relevos serial
-COM_RELE            = COMMA + 'Rele/Com_Rele.txt'                             # Comando relevos
+#CONF_TIEM_RELE      = CONF + 'Rele/Tiempo_Rele.txt'                           # Configuracion rele
+#CONF_DIREC_RELE     = CONF + 'Rele/Direccion_Rele.txt'                        # Configuracion Direccion rele
+#CONF_COMU_RELE      = CONF + 'Rele/Tipo_Rele.txt'                             # Configuracion de tipo de relevos
+#COM_TX_RELE         = COMMA + 'Rele/Com_Tx_Rele.txt'                          # Comando de comunicaiones relevos serial
+COM_RELE_S0            = COMMA + 'Rele/Com_Rele_S0.txt'                             # Comando relevos
+COM_RELE_S1            = COMMA + 'Rele/Com_Rele_S1.txt'                             # Comando relevos
+COM_RELE_S2            = COMMA + 'Rele/Com_Rele_S2.txt'                             # Comando relevos
 
 #---------------------------------------------------------------------------------------
 #                                  Buzzer 5V
@@ -175,11 +178,11 @@ STATUS_USER     = STATUS + 'Usuario/Status_User.txt'                         # E
 #                                   CONTER_Comunicaciones
 #---------------------------------------------------------------------------------------
 
-CONT_SEND_DATA_PATH = '/home/pi/Firmware/ComCounter/db/datatosend.txt'              # datos autorizados por el dispositivo
-CONT_SEND_FLAG_PATH = '/home/pi/Firmware/ComCounter/db/flagtosend.txt'              # Bandera de control de escritura
+#CONT_SEND_DATA_PATH = '/home/pi/Firmware/ComCounter/db/datatosend.txt'              # datos autorizados por el dispositivo
+#CONT_SEND_FLAG_PATH = '/home/pi/Firmware/ComCounter/db/flagtosend.txt'              # Bandera de control de escritura
 
-CONT_RECEIVED_DATA_PATH = '/home/pi/Firmware/ComCounter/db/datareceived.txt'        # Actualizar Usuarios
-CONT_RECEIVED_FLAG_PATH = '/home/pi/Firmware/ComCounter/db/flagreceived.txt'        # Bandera de control de escritura
+#CONT_RECEIVED_DATA_PATH = '/home/pi/Firmware/ComCounter/db/datareceived.txt'        # Actualizar Usuarios
+#CONT_RECEIVED_FLAG_PATH = '/home/pi/Firmware/ComCounter/db/flagreceived.txt'        # Bandera de control de escritura
 
 #---------------------------------------------------------------------------------------
 #                                   Configuracion de autorizaciones
@@ -193,9 +196,9 @@ CONF_AUTORIZACION_NFC      = CONF + 'Autorizaciones/Nfc/Tipos.txt'           # p
 #                                   Servidor
 #---------------------------------------------------------------------------------------
 
-CONF_DOMI_SERVER      = CONF + 'Server/Dominio_Servidor.txt'                 # Dominio
-CONF_IP_SERVER        = CONF + 'Server/IP_Servidor.txt'                      # IP dominio
-CONF_M_CONEX_SERVER   = CONF + 'Server/Mejor_Conexion.txt'                   # mejor coneccion
+#CONF_DOMI_SERVER      = CONF + 'Server/Dominio_Servidor.txt'                 # Dominio
+#CONF_IP_SERVER        = CONF + 'Server/IP_Servidor.txt'                      # IP dominio
+#CONF_M_CONEX_SERVER   = CONF + 'Server/Mejor_Conexion.txt'                   # mejor coneccion
 
 #---------------------------------------------------------------------------------------
 #                                   Menu Web
@@ -230,38 +233,31 @@ STATUS_NFC_S2           = STATUS + 'Nfc/Status_Nfc_S2.txt'                    # 
 #                                  Serial_Modbus --- posiblemente se elimine en revicion ----
 #---------------------------------------------------------------------------------------
 
-RX_MODBUS                 = COMMA + 'Serial_Modbus/RX_Modbus.txt'            # Datos leidos del Nfc
-TX_MODBUS                 = COMMA + 'Serial_Modbus/TX_Modbus.txt'            # Datos leidos del Nfc
-PILA_MODBUS               = COMMA + 'Serial_Modbus/PILA_Modbus.txt'          # Datos leidos del Nfc
+#RX_MODBUS                 = COMMA + 'Serial_Modbus/RX_Modbus.txt'            # Datos leidos del Nfc
+#TX_MODBUS                 = COMMA + 'Serial_Modbus/TX_Modbus.txt'            # Datos leidos del Nfc
+#PILA_MODBUS               = COMMA + 'Serial_Modbus/PILA_Modbus.txt'          # Datos leidos del Nfc
 
-ID_MOD_USUARIOS           = COMMA + 'Serial_Modbus/ID_MOD_Usuarios.txt'      # Datos leidos del Nfc
-ID_MOD_RELES              = COMMA + 'Serial_Modbus/ID_MOD_Reles.txt'        # Datos leidos del Nfc
+#ID_MOD_USUARIOS           = COMMA + 'Serial_Modbus/ID_MOD_Usuarios.txt'      # Datos leidos del Nfc
+#ID_MOD_RELES              = COMMA + 'Serial_Modbus/ID_MOD_Reles.txt'        # Datos leidos del Nfc
 
 #---------------------------------------------------------------------------------------
 #                                   Lectoras
 #---------------------------------------------------------------------------------------
-
-CONF_LECTORAS             = CONF + 'Lectoras/Configuraciones.txt'                   # conficugacion basica de tipos de lectoras
-
+#CONF_LECTORAS             = CONF + 'Lectoras/Configuraciones.txt'                   # conficugacion basica de tipos de lectoras
 #---------------------------------------------------------------------------------------
 #                                   Salidas
 #---------------------------------------------------------------------------------------
-
-CONF_SALIDAS              = CONF + 'Salidas/Configuraciones.txt'                   # conficugacion basica de tipos de lectoras
-
+#CONF_SALIDAS              = CONF + 'Salidas/Configuraciones.txt'                   # conficugacion basica de tipos de lectoras
 #---------------------------------------------------------------------------------------
 #                                   Sedes
 #---------------------------------------------------------------------------------------
-
-CONF_SEDES                = CONF + 'Locaciones/Configuraciones.txt'                      # Configuracion de toda la sede y cuantas sedes
-
-
+#CONF_SEDES                = CONF + 'Locaciones/Configuraciones.txt'                      # Configuracion de toda la sede y cuantas sedes
 
 #---------------------------------------------------------------------------------------
 #                                   Modulo respuesta
 #---------------------------------------------------------------------------------------
 
-COM_RES               = COMMA + 'Mod_Respuesta/Com_Res.txt'
+COM_RES               = COMMA + 'Mod_Respuesta/Com_Res_S0.txt'
 COM_RES_S1            = COMMA + 'Mod_Respuesta/Com_Res_S1.txt'
 COM_RES_S2            = COMMA + 'Mod_Respuesta/Com_Res_S2.txt'
 
@@ -276,6 +272,8 @@ NEW_TAB_USER_TIPO_2     = NEW_DATA + 'Tipo_2.txt'                     # Usuarios
 NEW_TAB_USER_TIPO_3     = NEW_DATA + 'Tipo_3.txt'                     # Usuarios del servidor o counter
 NEW_TAB_USER_TIPO_4     = NEW_DATA + 'Tipo_4.txt'                     # Usuarios del servidor o counter
 NEW_TAB_USER_TIPO_5     = NEW_DATA + 'Tipo_5.txt'                     # Usuarios del servidor o counter
+NEW_TAB_USER_TIPO_6     = NEW_DATA + 'Tipo_6.txt'                     # Usuarios del servidor o counter
+NEW_TAB_USER_TIPO_7     = NEW_DATA + 'Tipo_7.txt'                     # Usuarios del servidor o counter
 
                                                      # Ruta      Base de datos
 NEW_AUTO_USER_TIPO_1     = DATA + 'Autorizaciones/Tipo_1.txt'        # Usuarios del servidor o counter
@@ -283,3 +281,5 @@ NEW_AUTO_USER_TIPO_2     = DATA + 'Autorizaciones/Tipo_2.txt'        # Usuarios 
 NEW_AUTO_USER_TIPO_3     = DATA + 'Autorizaciones/Tipo_3.txt'        # Usuarios del servidor o counter
 NEW_AUTO_USER_TIPO_4     = DATA + 'Autorizaciones/Tipo_4.txt'        # Usuarios del servidor o counter
 NEW_AUTO_USER_TIPO_5     = DATA + 'Autorizaciones/Tipo_5.txt'        # Usuarios del servidor o counter
+NEW_AUTO_USER_TIPO_6     = DATA + 'Autorizaciones/Tipo_6.txt'        # Usuarios del servidor o counter
+NEW_AUTO_USER_TIPO_7     = DATA + 'Autorizaciones/Tipo_7.txt'        # Usuarios del servidor o counter

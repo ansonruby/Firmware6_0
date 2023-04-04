@@ -1,44 +1,56 @@
 from lib.Lib_Rout import *
-from lib.Lib_File import Get_File, Clear_Line, Set_File, Add_Line_End, Get_Line
+from lib.Lib_File import Get_File, Set_File, Add_Line_End, Get_Line
 from lib.Fun_Tipo_NFC import MD5
 from lib.Lib_Binary_Search import Binary_Search_Id, Binary_Remove_Id
 from lib.Lib_Request_Json import send_petition
+from lib.Lib_settings import Get_Mod_Validacion, Get_Lectoras
 import json
 import re
 import time
 import datetime
+import os
+
+Configs = Get_Mod_Validacion()
+Lectoras = Get_Lectoras()
+
+config_access = "Acceso fisico"  # "Accesos" o "Acceso dinamico" o "Acceso fisico"
+
+if "Configuracion_Acceso" in Configs:
+    config_access = Configs["Configuracion_Acceso"]
 
 
 def Validar_Acceso(access_code, tipo_acceso, medio_acceso, lectora):
     valid_access = False
     if medio_acceso == 1:
-        valid_access = Validar_QR(access_code, tipo_acceso)
+        valid_access = Validar_QR(access_code, tipo_acceso, lectora)
     elif medio_acceso == 2:
-        valid_access = Validar_PIN(access_code, tipo_acceso)
+        valid_access = Validar_PIN(access_code, tipo_acceso, lectora)
     elif medio_acceso == 11:
-        valid_access = Validar_NFC(access_code, tipo_acceso)
+        valid_access = Validar_NFC(access_code, tipo_acceso, lectora)
 
     if valid_access:
-        user_id, direction_ref = valid_access
-        Enviar_Respuesta(user_id, tipo_acceso,
+        user_index, direction_ref = valid_access
+        Enviar_Respuesta(user_index, tipo_acceso,
                          medio_acceso, lectora, direction_ref)
     else:
         Respaldo_Online({
             "access_type": tipo_acceso,
             "access_medium": medio_acceso,
-            "access_code": access_code
+            "access_code": access_code,
+            "reader": lectora
         }, lectora)
 
 
 def Validar_QR_Antiguo(access_data, tipo_acceso, medio_acceso, lectora):
     Respaldo_Online({
         "access_type": tipo_acceso,
+        "access_medium": medio_acceso,
         "data": "<" + ".".join(access_data) + ">",
         "old_qr_code": True
     }, lectora)
 
 
-def Validar_QR(access_code, tipo_acceso):
+def Validar_QR(access_code, tipo_acceso, lectora):
     separator = re.findall("F[A-F]", access_code)
 
     # Separador no encontrado
@@ -47,13 +59,19 @@ def Validar_QR(access_code, tipo_acceso):
     else:
         separator = separator[0]
 
-    user_id, final_data = access_code.split(separator)
-    user_id = int(user_id)
+    user_index, final_data = access_code.split(separator)
     read_time = int(time.time()*1000)
     time_len = len(str(read_time))
     qr_time_str = final_data[:time_len]
     qr_time = int(qr_time_str) if len(qr_time_str) > 0 else 0
     extra_data = final_data[time_len:]
+
+    direction_ref = False
+    invitation_index = False
+
+    if tipo_acceso in [4]:
+        direction_ref = user_index
+        user_index, invitation_index = user_index.split("E")
 
     # validaciones de tiempo para qrs dinamicos
     if tipo_acceso in [1, 2, 4, 5]:
@@ -75,22 +93,25 @@ def Validar_QR(access_code, tipo_acceso):
         NEW_TAB_USER_TIPO_4,
         NEW_TAB_USER_TIPO_5
     ]
-
-    file_db = S0+tabs_users[tipo_acceso-1]
+    location = get_location_of_reader(lectora)
+    file_db = location+tabs_users[tipo_acceso-1]
     access_index = False
-    if tipo_acceso == 3:
-        access_index = Binary_Remove_Id(file_db, user_id)
-    else:
-        access_index = Binary_Search_Id(file_db, user_id)
+    access_index = Binary_Search_Id(file_db, user_index)
 
     if not access_index:
         return False
 
-    direction_ref = False
     db_data = Get_Line(file_db, access_index).strip().split(".")
-    direction_ref = db_data[-1]
-    if Buscar_usuario_adentro(direction_ref):
-        return (str(user_id), direction_ref)
+
+    if tipo_acceso in [1, 2, 5]:
+        direction_ref = db_data[-1]
+
+    user_in_index = Buscar_usuario_adentro(direction_ref, lectora)
+    if user_in_index:
+        if tipo_acceso in [2, 4]:
+            return (user_in_index, direction_ref)
+        else:
+            return (user_index, direction_ref)
 
     if tipo_acceso in [1, 5]:
         week_schedules = json.loads(db_data[1])
@@ -123,119 +144,240 @@ def Validar_QR(access_code, tipo_acceso):
         for booking_id, (start_time, end_time) in bookings.items():
             if start_time <= read_time and end_time >= read_time:
                 active_booking = True
-                user_id = booking_id
+                user_index = booking_id
                 break
 
         if not active_booking:
             return False
 
-    elif tipo_acceso in [3, 4]:
+    elif tipo_acceso == 3:
 
         # Fuera del tiempo de uso (milisegundos)
         if not (read_time > int(db_data[1]) and read_time < int(db_data[2])):
             return False
 
-    return (str(user_id), direction_ref)
+        Binary_Remove_Id(file_db, user_index)
 
+    elif tipo_acceso == 4:
+        invitations = json.loads(db_data[1])
 
-def Validar_PIN(access_code, tipo_acceso):
-    valid_access = False
-    access_key = False
-    if tipo_acceso == 1:
-        access_key = MD5(access_code)
-        db = Get_File(S0+TAB_USER_TIPO_1).strip().split("\n")
-        for access_db in db:
-            if access_db == "":
-                continue
-            key_db, encrypted_pin = access_db.split(".")
-            if access_key == encrypted_pin:
-                valid_access = True
-                break
-
-    if valid_access:
-        return (key_db, key_db)
-
-
-def Validar_NFC(access_code, tipo_acceso):
-    valid_access = False
-    access_key = False
-    if tipo_acceso == 6:
-        access_key = MD5(access_code)
-        db = Get_File(S0+TAB_USER_TIPO_6).strip().split("\n")
-        for access_db in db:
-            if access_db == "":
-                continue
-            key_db, encrypted_pin = access_db.split(".")
-            if access_key == encrypted_pin:
-                valid_access = True
-                break
-
-    if valid_access:
-        return (key_db, key_db)
-
-
-def Buscar_usuario_adentro(access_key):
-    if access_key and access_key != "":
-        users_in = ""
-        with open(S0+TAB_USER_IN, 'r') as df:
-            users_in = df.read().strip()
-            df.close()
-        try:
-            users_in_json = json.loads(users_in)
-        except Exception as e:
-            users_in_json = {}
-
-        if not str(access_key) in users_in_json:
+        if not invitation_index in invitations:
             return False
 
-        return int(users_in_json[str(access_key)]) % 2
+        start_time = int(invitations[invitation_index][0])
+        end_time = int(invitations[invitation_index][1])
 
-
-def Definir_Direccion(access_key):
-    direction = "0"
-
-    if access_key and access_key != "":
-        users_in = ""
-        with open(S0+TAB_USER_IN, 'r') as df:
-            users_in = df.read().strip()
-            df.close()
-        try:
-            users_in_json = json.loads(users_in)
-        except Exception as e:
-            users_in_json = {}
-
-        if str(access_key) in users_in_json:
-            direction = "1"
-            users_in_json.pop(str(access_key))
+        if start_time <= read_time and end_time >= read_time:
+            user_index = invitation_index
         else:
-            users_in_json[str(access_key)] = "1"
-        users_in = json.dumps(users_in_json, indent=2)
+            return False
 
-        with open(S0+TAB_USER_IN, 'w') as dfw:
-            dfw.write(users_in)
-            dfw.close()
-
-    return direction
+    return (str(user_index), direction_ref)
 
 
-def Enviar_Respuesta(user_id, tipo_acceso, medio_acceso, lectora, direction_ref):
+def Validar_PIN(access_code, tipo_acceso, lectora):
+    pin_index = access_code[:-4]
+    encrypt_pin = MD5(access_code[-4:])
+    location = get_location_of_reader(lectora)
+    file_db = location+NEW_TAB_USER_TIPO_7
+
+    access_index = Binary_Search_Id(file_db, pin_index)
+
+    if not access_index:
+        return False
+
+    db_data = Get_Line(file_db, access_index).strip().split(".")
+
+    direction_ref = db_data[-1]
+
+    user_in_index = Buscar_usuario_adentro(direction_ref, lectora)
+    if user_in_index:
+        return (pin_index, direction_ref)
+
+    if tipo_acceso == 7:
+
+        if encrypt_pin != db_data[1]:
+            return False
+
+        weekdays = ["F0", "FA", "FB", "FC", "FD", "FE", "FF"]
+
+        today = weekdays[datetime.datetime.today().weekday()]
+        week_schedules = json.loads(db_data[2])
+        if not today in week_schedules:
+            return False
+
+        day_schedules = week_schedules[today]
+
+        valid_access_time = False
+        for schedule in day_schedules:
+            start_time_day = schedule[0].split(":")
+            start_time = datetime.time(
+                int(start_time_day[0]), int(start_time_day[1]))
+
+            end_time_day = schedule[1].split(":")
+            end_time = datetime.time(
+                int(end_time_day[0]), int(end_time_day[1]))
+
+            if start_time < datetime.datetime.now().time() and end_time > datetime.datetime.now().time():
+                valid_access_time = True
+                break
+
+        if not valid_access_time:
+            return False
+
+    return (str(pin_index), direction_ref)
+
+
+def Validar_NFC(access_code, tipo_acceso, lectora):
+    valid_access = False
+    access_key = False
+    location = get_location_of_reader(lectora)
+    if tipo_acceso == 6:
+        access_key = MD5(access_code)
+        db = Get_File(location+TAB_USER_TIPO_6).strip().split("\n")
+        for access_db in db:
+            if access_db == "":
+                continue
+            db_data = access_db.split(".")
+            nfc_code = db_data[0]
+
+            if access_key == nfc_code:
+
+                weekdays = ["F0", "FA", "FB", "FC", "FD", "FE", "FF"]
+
+                today = weekdays[datetime.datetime.today().weekday()]
+                week_schedules = json.loads(db_data[1])
+                if not today in week_schedules:
+                    return False
+
+                day_schedules = week_schedules[today]
+
+                valid_access_time = False
+                for schedule in day_schedules:
+                    start_time_day = schedule[0].split(":")
+                    start_time = datetime.time(
+                        int(start_time_day[0]), int(start_time_day[1]))
+
+                    end_time_day = schedule[1].split(":")
+                    end_time = datetime.time(
+                        int(end_time_day[0]), int(end_time_day[1]))
+
+                    if start_time < datetime.datetime.now().time() and end_time > datetime.datetime.now().time():
+                        valid_access_time = True
+                        break
+
+                if valid_access_time:
+                    direction_ref = db_data[-1]
+                    valid_access = True
+                break
+
+    if valid_access:
+        return (direction_ref, direction_ref)
+
+
+def Buscar_usuario_adentro(access_key, lectora):
+    global config_access
+    location = get_location_of_reader(lectora)
+    if (config_access == "Acceso fisico" and get_direction_of_reader(lectora)) or config_access == "Acceso dinamico":
+        if access_key and access_key != "":
+            users_in = ""
+            with open(location+TAB_USER_IN, 'r') as df:
+                users_in = df.read().strip()
+                df.close()
+            try:
+                users_in_json = json.loads(users_in)
+            except Exception as e:
+                users_in_json = {}
+
+            if not str(access_key) in users_in_json:
+                return False
+
+            return users_in_json[str(access_key)][0] if int(users_in_json[str(access_key)][1]) % 2 else False
+
+
+def Definir_Direccion(access_key, user_index, lectora):
+    global config_access
+
+    direction = "0"
+    location = get_location_of_reader(lectora)
+
+    if config_access == "Accesos":
+        return direction
+    elif config_access == "Acceso fisico":
+        if access_key and access_key != "":
+            users_in = ""
+            with open(location+TAB_USER_IN, 'r') as df:
+                users_in = df.read().strip()
+                df.close()
+            try:
+                users_in_json = json.loads(users_in)
+            except Exception as e:
+                users_in_json = {}
+
+            if get_direction_of_reader(lectora) and str(access_key) in users_in_json:
+                users_in_json.pop(str(access_key))
+            else:
+                users_in_json[str(access_key)] = [user_index, "1"]
+
+            users_in = json.dumps(users_in_json, indent=4)
+            with open(location+TAB_USER_IN, 'w') as dfw:
+                dfw.write(users_in)
+                dfw.close()
+
+        return str(get_direction_of_reader(lectora))
+    elif config_access == "Acceso dinamico":
+        if access_key and access_key != "":
+            users_in = ""
+            with open(location+TAB_USER_IN, 'r') as df:
+                users_in = df.read().strip()
+                df.close()
+            try:
+                users_in_json = json.loads(users_in)
+            except Exception as e:
+                users_in_json = {}
+
+            if str(access_key) in users_in_json:
+                direction = "1"
+                users_in_json.pop(str(access_key))
+            else:
+                users_in_json[str(access_key)] = [user_index, "1"]
+            users_in = json.dumps(users_in_json, indent=4)
+
+            with open(location+TAB_USER_IN, 'w') as dfw:
+                dfw.write(users_in)
+                dfw.close()
+
+        return direction
+
+
+def Enviar_Respuesta(user_index, tipo_acceso, medio_acceso, lectora, direction_ref):
     respuesta_acceso = "Access denied"
-    if user_id:
+    if user_index:
         direction = "0"
 
         if tipo_acceso != 3:
             # Cambiar el id en la tabla autorizados para invitaciones multiples usos
-            if tipo_acceso == 4:
-                direction = Definir_Direccion(
-                    str(tipo_acceso)+"."+str(direction_ref))
-            else:
-                direction = Definir_Direccion(str(direction_ref))
+            direction = Definir_Direccion(
+                str(direction_ref), user_index, lectora)
 
         respuesta_acceso = "Access granted-E" if direction == "0" else "Access granted-S"
         read_time = int(time.time()*1000)
-        athorization_code = str(user_id) + "."+str(read_time) + \
+        athorization_code = str(user_index) + "."+str(read_time) + \
             "."+str(medio_acceso) + "."+direction+"."+"1"
-        Add_Line_End(S0+TAB_ENV_SERVER, athorization_code+"\n")
+        tabs_autorizaciones = [
+            NEW_AUTO_USER_TIPO_1,
+            NEW_AUTO_USER_TIPO_2,
+            NEW_AUTO_USER_TIPO_3,
+            NEW_AUTO_USER_TIPO_4,
+            NEW_AUTO_USER_TIPO_5,
+            NEW_AUTO_USER_TIPO_6,
+            NEW_AUTO_USER_TIPO_7
+        ]
+        location = get_location_of_reader(lectora)
+        Add_Line_End(
+            location+tabs_autorizaciones[tipo_acceso-1],
+            athorization_code+"\n"
+        )
 
     comand_res = [
         COM_RES,
@@ -244,24 +386,29 @@ def Enviar_Respuesta(user_id, tipo_acceso, medio_acceso, lectora, direction_ref)
     ]
 
     # Envio modulo respuesta
-    Set_File(S0+comand_res[lectora], respuesta_acceso)
+    Set_File(os.path.join(FIRM, HUB, comand_res[lectora]), respuesta_acceso)
 
 
 def Respaldo_Online(data, lectora):
     respuesta_acceso = "Access denied"
-    respuesta_server = False
-    if "old_qr_code" in data:
-        respuesta_server = send_petition(
-            "grant", method="POST", json_data=data, timeout=10)
-        if respuesta_server and respuesta_server.ok:
-            respuesta_acceso = respuesta_server.text
-            respuesta_acceso = respuesta_acceso if "Access granted" in respuesta_acceso else "Access denied"
-    else:
-        # respueDefinir_Direccionsta_server = send_petition("online backup",method="POST", json_data=data)
-        # if respuesta_server and respuesta_server.ok:
-        #     respuesta_acceso = respuesta_server.text
-        #     respuesta_acceso = respuesta_acceso if "Access granted" in respuesta_acceso else "Access denied"
-        #     Definir_Direccion()
+    try:
+        respuesta_server = False
+        if "old_qr_code" in data:
+            respuesta_server = send_petition(
+                "grant", method="POST", json_data=data, timeout=10)
+            if respuesta_server and respuesta_server.ok:
+                respuesta_acceso = respuesta_server.text
+                respuesta_acceso = respuesta_acceso if "Access granted" in respuesta_acceso else "Access denied"
+        else:
+            respuesta_server = send_petition(
+                "online_backup", method="POST", json_data=data)
+            if respuesta_server and respuesta_server.ok:
+                respuesta_server = respuesta_server.json()
+                respuesta_acceso = respuesta_server["access_answer"]
+                if "Access granted" in respuesta_server["access_answer"]:
+                    Definir_Direccion(
+                        respuesta_server["user_id"], respuesta_server["user_index"], lectora)
+    except:
         pass
 
     comand_res = [
@@ -271,4 +418,33 @@ def Respaldo_Online(data, lectora):
     ]
 
     # Envio modulo respuesta
-    Set_File(S0+comand_res[lectora], respuesta_acceso)
+    Set_File(os.path.join(FIRM, HUB, comand_res[lectora]), respuesta_acceso)
+
+
+def get_location_of_reader(lectora):
+    global Lectoras
+
+    locations = {
+        "S0": S0,
+        "S1": S1,
+        "S2": S2
+    }
+
+    for reader in Lectoras:
+        if "Puerto" in reader and "Locacion" in reader and int(reader["Puerto"]) == int(lectora):
+            return locations[reader["Locacion"]]
+
+    return S0
+
+
+def get_direction_of_reader(lectora):
+    global Lectoras
+
+    for reader in Lectoras:
+        if "Puerto" in reader and "Direccion" in reader and int(reader["Puerto"]) == int(lectora):
+            return reader["Direccion"] == "EXIT"
+
+    # 0 for entrys
+    # 1 for exits
+
+    return int(lectora) % 2

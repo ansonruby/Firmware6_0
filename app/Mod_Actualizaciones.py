@@ -2,7 +2,8 @@
 #---------------------------------------------------------------------------------------
 """
 
-Autor: Anderson Amaya Pulido
+Autor:  Luding Castaneda,
+        Anderson Amaya Pulido
 
 Libreria personal para procesar un qr.
 
@@ -33,55 +34,73 @@ import os
 #---------------------------------
 from lib.Lib_Request_Json import *            # importar con los mismos nombres
 from lib.Fun_Dispositivo import *   #
+from lib.Lib_settings import Get_Mod_Actualizaciones
+
+#-----------------------------------------------------------
+#                       CONTANTES
+#-----------------------------------------------------------
+
+MA_Mensajes = 0     # 0: NO print  1: Print
 
 #BKDB                = FIRM +'db/HUB/BKdb/'
 T_Antes =time.time()
 T_Antes_send_autorizations=time.time()
 
-def Create_Set_File(arch, Text):
-    archivo = open(arch, "w")
-    archivo.write(Text)
-    archivo.close()
+Config_Mod  = Get_Mod_Actualizaciones()
+Tiempo_stop = float(Config_Mod['Time_Sleep_Mod'])
 
-def Delete_directory(Ruta):
-	try:
-		shutil.rmtree(Ruta) # eliminar directorios
-		return 1
-	except Exception as e:
-		#print 'No Existe el directorio'
-		return -1
+Bandera_Periodo_Usuario = 0
+Timepo_periodo_Usuarios=10
+if Config_Mod['Usuarios_Periodo'] != "False":
+    Bandera_Periodo_Usuario = 1
+    Timepo_periodo_Usuarios=int(Config_Mod['Usuarios_Periodo'])
 
-def Create_Directory_new(Ruta):
-	Delete_directory(Ruta)
-	os.makedirs(Ruta)
+Bandera_Hora_Usuario = 0
+if Config_Mod['Usuarios_Time'] != "False":
+    Bandera_Hora_Usuario = 1
+    Hora_Usuario= Config_Mod['Usuarios_Time']
+
+Bandera_Inicio_Usuario = 0
+if Config_Mod['Usuarios_Inicio'] != "False":
+    Bandera_Inicio_Usuario = 1
+
+Bandera_Periodo_Autorizacion = 0
+Timepo_periodo_Autorizacion=10
+if Config_Mod['Actualizaciones_Periodo'] != "False":
+    Bandera_Periodo_Autorizacion = 1
+    Timepo_periodo_Autorizacion=int(Config_Mod['Actualizaciones_Periodo'])
+
+
+
 
 def Sort_data(Data_json):
-	for Location in Data_json.keys():
-		#print Location
-		Ruta_Location = os.path.join(FIRM,'db',Location,NEW_DATA[:-1]+'_New')
-		#print Ruta_Location
-		Create_Directory_new(Ruta_Location)
-		Data_Location= Data_json[Location]
-		for Tipo in Data_Location.keys():
-			#print Tipo
-			Ruta_Dato = os.path.join(Ruta_Location, Tipo+'.txt' )
-			#print Ruta_Dato
-			Data_Tipo= Data_Location[Tipo]#lista ordenada
-			Data_Tipo = "\n".join(Data_Tipo) + "\n"
-			#print Data_Tipo
-			Create_Set_File(Ruta_Dato, Data_Tipo) # Crear Archivo y llenado
-		# intercambair buffer
-		try:
-			Ruta_Location_BK = os.path.join(FIRM,'db',Location,NEW_DATA[:-1]+'_BK')
-			Ruta_Location_ACT = os.path.join(FIRM,'db',Location,NEW_DATA[:-1])
-			os.rename(Ruta_Location_ACT, Ruta_Location_BK)
-			os.rename(Ruta_Location, Ruta_Location_ACT)
-			Delete_directory(Ruta_Location_BK)
-			#return 1
-		except Exception as e:
-			print 'Error en el buffer'#posiblenete por que no exite la lacacion
-			#return -1
-
+    for Location in Data_json.keys():
+        #print Location
+        Ruta_Location = os.path.join(FIRM,'db',Location,NEW_DATA[:-1]+'_New')
+        Ruta_Location_BK = os.path.join(FIRM,'db',Location,NEW_DATA[:-1]+'_BK')
+        Ruta_Location_ACT = os.path.join(FIRM,'db',Location,NEW_DATA[:-1])
+        Delete_directory(Ruta_Location)
+        Delete_directory(Ruta_Location_BK)
+        #print Ruta_Location
+        Create_Directory_new(Ruta_Location)
+        Data_Location= Data_json[Location]
+        for Tipo in Data_Location.keys():
+            #print Tipo
+            Ruta_Dato = os.path.join(Ruta_Location, Tipo+'.txt' )
+            #print Ruta_Dato
+            Data_Tipo= Data_Location[Tipo]#lista ordenada
+            Data_Tipo = "\n".join(Data_Tipo) + "\n"
+            #print Data_Tipo
+            Create_Set_File(Ruta_Dato, Data_Tipo) # Crear Archivo y llenado
+        # intercambair buffer
+        try:
+            os.rename(Ruta_Location_ACT, Ruta_Location_BK)
+            os.rename(Ruta_Location, Ruta_Location_ACT)
+            Delete_directory(Ruta_Location_BK)
+            #return 1
+        except Exception as e:
+            print 'Error en el buffer'#posiblemente por que no exite la lacacion
+#---------------------------------------------------------
 def Hora_Actual():
 	tiempo_segundos = time.time()
 	#print(tiempo_segundos)
@@ -89,22 +108,21 @@ def Hora_Actual():
 	tiempo_cadena = time.strftime("%I:%M %p")
 	#print(tiempo_cadena)
 	return tiempo_cadena
-
+#---------------------------------------------------------
+def Actualizacion_Usuarios():
+    Data_sen = send_petition("get_users")
+    if Data_sen != False and Data_sen.ok:
+        Sort_data(Data_sen.json())
+#---------------------------------------------------------
 def Hora_Actualizacion_Usuarios(Hora_Actualizacion):
-    global Data_simulada
+    global Data_simulada,MA_Mensajes
     if Hora_Actualizacion == Hora_Actual():
         while 1:
             time.sleep(2)
             if Hora_Actual() != Hora_Actualizacion : break
-            #if PSP_Mensajes:
-        print 'Actualizando Usuarios'
-        Data_sen = send_petition("get_users")
-        #Data_sen = Data_simulada
-        if Data_sen != False and Data_sen.ok:
-            #x_json = json.loads(Data_sen)
-            #print Data_sen.json()
-            Sort_data(Data_sen.json())
-
+        if MA_Mensajes: print 'Hora_Actualizacion_Usuarios'
+        Actualizacion_Usuarios()
+#---------------------------------------------------------
 def Periodo_Actualizacion_Usuarios(Periodo):
     global T_Antes
     global Data_simulada
@@ -112,25 +130,24 @@ def Periodo_Actualizacion_Usuarios(Periodo):
     T_transcurido = int(T_Actual-T_Antes)
     #print 'T_Diferencia: ' + str(T_transcurido)
     if T_transcurido >= Periodo :
-        print 'Actualizando Usuarios por periodo'
+        if MA_Mensajes: print 'Periodo_Actualizacion_Usuarios'
         T_Antes = T_Antes = time.time()
-        Data_sen = send_petition("get_users")
-        #Data_sen = Data_simulada
-        if Data_sen != False and Data_sen.ok:
-            #x_json = json.loads(Data_sen)
-            Sort_data(Data_sen.json())
-
+        Actualizacion_Usuarios()
+#---------------------------------------------------------
 def send_autorizations():
+    global MA_Mensajes
     Status_Autorisados=0
     Data_Autorizados ={}
     Data_Location={}
     for Location in range(3):
         Ruta = os.path.join(FIRM,'db','S'+str(Location))
+        #print Ruta
         if os.path.exists(Ruta) == True:
             Data_Autorizados ={}
             for Tipo in range(1,7):
                 Archivo = 'Tipo_'+str(Tipo)
                 Ruta = os.path.join(FIRM,'db','S'+str(Location),DATA,'Autorizaciones',Archivo +'.txt')
+                #print Ruta
                 if os.path.exists(Ruta) == True:
                     Ev = Get_File(Ruta)
                     if len(Ev) >=2:
@@ -142,23 +159,23 @@ def send_autorizations():
             Data_Location['S'+str(Location)] = Data_Autorizados
             #print Data_Autorizados
     if Status_Autorisados == 1:
-        #print Data_Location
+        print Data_Location
         repuesta= send_petition("send_autorizations", method="POST", json_data= Data_Location)
         if repuesta.ok :
-            print 'se resivieron los datos eliminado'
+            #print 'se resivieron los datos eliminando'
             for Location in range(3):
                 Ruta = os.path.join(FIRM,'db','S'+str(Location))
                 if os.path.exists(Ruta) == True:
                     for Tipo in range(1,7):
                         Archivo = 'Tipo_'+str(Tipo)
                         Ruta = os.path.join(FIRM,'db','S'+str(Location),DATA,'Autorizaciones',Archivo +'.txt')
+                        #print Ruta
                         if os.path.exists(Ruta) == True: Clear_File(Ruta)
         else:
-            print 'nuevo intento'
-
-    else:                       print 'NO hay datos'
-
-
+            if MA_Mensajes: print 'nuevo intento'
+    else:
+        if MA_Mensajes: print 'NO hay datos'
+#---------------------------------------------------------
 def Periodo_send_autorizations(Periodo):
     global T_Antes_send_autorizations
     global Data_simulada
@@ -166,80 +183,50 @@ def Periodo_send_autorizations(Periodo):
     T_transcurido = int(T_Actual-T_Antes_send_autorizations)
     #print 'T_Diferencia: ' + str(T_transcurido)
     if T_transcurido >= Periodo :
-        print 'Periodo_send_autorizations'
+        if MA_Mensajes: print 'Periodo_send_autorizations'
         T_Antes_send_autorizations = time.time()
-        Data_sen = send_petition("get_users")
+        #Data_sen = send_petition("get_users")
         send_autorizations()
-
+#---------------------------------------------------------
+def Actualizar_Inicio_Usuarios():
+    global MA_Mensajes
+    if MA_Mensajes: print 'Actualizar_Inicio_Usuarios'
+    Actualizacion_Usuarios()
 
 
 print Hora_Actual()
 
-
-
+if Bandera_Inicio_Usuario: Actualizar_Inicio_Usuarios()
 
 while 1:
     #---------------------------------------------------------
     #  Proceso 1: Tiempo de espera para disminuir proceso
     #---------------------------------------------------------
-    time.sleep(2) #minimo 1
+    time.sleep(Tiempo_stop) #minimo 1
     #---------------------------------------------------------
     # Proceso 2: Actualizar base de datos en una hora determinada ("12:10 AM") # 12:00 AM     03:59 PM # hora chile  10:00 PM 12:10 AM
     #---------------------------------------------------------
-    Hora_Actualizacion_Usuarios("05:38 PM")
+    if Bandera_Hora_Usuario: Hora_Actualizacion_Usuarios(Hora_Usuario)
     #---------------------------------------------------------
     # Proceso 3: Actualizar base de datos por periodos de tiempos minimo 1 segundo,  60*1 ->1 minuto
     #---------------------------------------------------------
-    #Periodo_Actualizacion_Usuarios(60*2)
+    if Bandera_Periodo_Usuario: Periodo_Actualizacion_Usuarios(Timepo_periodo_Usuarios)
     #---------------------------------------------------------
     #  Proceso 4:Enviar usuarios a servidor periodicamente si hay
     #---------------------------------------------------------
-    Periodo_send_autorizations(6)
-
-
-
-
-
-#send_autorizations()
-
+    if Bandera_Periodo_Autorizacion: Periodo_send_autorizations(Timepo_periodo_Autorizacion)
 
 
 #-------------------------------------
 # pruebas de uso
 #-------------------------------------
-
-#Data_sen = send_petition("get_users")
-#print Data_sen
-#Sort_data(Data_sen)
-#x_json = json.loads(Data_simulada)
-#Sort_data(x_json)
-
-#x_json = json.loads(Data_Location)
-#print x_json["S0"]["Tipo_1"]
-
-#jsonString = json.dumps(Ev)
-#print jsonString
-#Autorizaciones = Get_File(S0+NEW_AUTO_USER_TIPO_1)
-
-
+#actualizacion de usuario se realisa todo al mismo timepo ,
+# posiblemente hay que separa para cada configuracion de locacion
+# falta realisa hilos por cada accion par que cada una sea separada
+#Actualizacion_Usuarios()
+#send_autorizations()
 """
-
-{
-        "S0": {
-            "Tipo_1": ['1', '2', '3'],
-            "Tipo_2": ['1.123132.1231234', '2.123132.1231234', '3.123132.1231234'],
-            "Tipo_3": [],
-            "Tipo_4": []
-        },
-
-        "S1": {
-            "Tipo_1": ['1', '2', '3'],
-            "Tipo_2": ['1.123132.1231234', '2.123132.1231234', '3.123132.1231234'],
-            "Tipo_3": [],
-            "Tipo_4": []
-        }
-    }
-
-#Data_simulada ='{"S0":{"Tipo_1":"1,2,3","Tipo_2":"1.123132.1231234,2.123132.1231234,3.123132.1231234"}}'
-Data_simulada ='{"S0":{"Tipo_1":"1,2,3","Tipo_2":"1.123132.1231234,2.123132.1231234,3.123132.1231234","Tipo_3":"","Tipo_4":""},"S1":{"Tipo_1":"1,2,3","Tipo_2":"1.123132.1231234,2.123132.1231234,3.123132.1231234","Tipo_3":"","Tipo_4":""}}'
+while 1:
+    Periodo_send_autorizations(6)
 """
+#print S0+STATUS_QR_S1
