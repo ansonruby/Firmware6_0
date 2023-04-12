@@ -31,7 +31,7 @@ from lib.Lib_settings import *  # importar con los mismos nombres
 #                       CONTANTES
 #-----------------------------------------------------------
 
-MR_Mensajes = 1     # 0: NO print  1: Print
+MR_Mensajes = 0     # 0: NO print  1: Print
 Config_Mod  = Get_Mod_Respuesta()
 Tiempo_stop = float(Config_Mod['Time_Sleep_Mod'])
 #---------------------------------------------------------
@@ -71,10 +71,13 @@ class SALIDAS_ACCIONES(object):
 
         if    self.Canal_lectora == '3':
             self.COM_Respuesta      = os.path.join(FIRM,HUB,COM_RES)
+            """
+            # Para CAT esclavo
             self.Salida_COM_RES     = S0 + COM_RES
             self.Salida_COM_RELE    = S0 + COM_RELE
             self.Salida_COM_LED     = S0 + COM_LED
             self.Salida_COM_BUZZER  = S0 + COM_BUZZER
+            """
         elif  self.Canal_lectora == '0': self.COM_Respuesta = os.path.join(FIRM,HUB,COM_RES)
         elif  self.Canal_lectora == '1': self.COM_Respuesta = os.path.join(FIRM,HUB,COM_RES_S1)
         elif  self.Canal_lectora == '2': self.COM_Respuesta = os.path.join(FIRM,HUB,COM_RES_S2)
@@ -173,6 +176,6 @@ for Mapa in VECTOR_Mapin:
         if MR_Mensajes : print 'Key Error no definidas'
 
 
-
+print 'Iniciando reviciones'
 for Salida_Rele in VECTOR_SALIDAS:
     Salida_Rele.Inicio_Revicion()

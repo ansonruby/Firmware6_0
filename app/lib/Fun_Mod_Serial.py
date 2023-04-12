@@ -107,6 +107,14 @@ class LECTORAS(object):
         self.Lectura_COM_QR     = ''
         self.Lectura_STATUS_QR  = ''
         #---------------------------------------
+        #---------------------------------------
+        self.Lectura_COM_TECLADO     = ''
+        self.Lectura_STATUS_TECLADO  = ''
+        #---------------------------------------
+        #---------------------------------------
+        self.Lectura_COM_NFC    = ''
+        self.Lectura_STATUS_NFC = ''
+        #---------------------------------------
         self.Enrutar_Archivos_Salida()
     #---------------------------------------------------------
     def Transmitir_Datos(self):
@@ -183,89 +191,91 @@ class LECTORAS(object):
         return data
     #---------------------------------------------------------
     def Procesar_RX_QR600_VHK_E(self,rcv):
-
         global FS_Mensajes
-
         Estado = 0
         Dato =''
-
-        #if FS_Mensajes: print 'Resicion _Datos TX_QR600_VHK_E'
-
-        if len(rcv) > 0:
-            if (rcv.find('<') != -1 ) and (rcv.find('>') != -1) :
-                #print rcv.find('<')
-                #print rcv.find('>')
-                ES_QR = rcv[rcv.find('<'): rcv.find('>')+1]
-                #print 'QR: ' + ES_QR
-                Estado = 4
-                Dato =ES_QR
-
-            else:
-                secuencia = rcv.split("AA")
-                #print len(secuencia)
-                if len(secuencia) >=3:
-                    #print secuencia[1]
+        try :
+            #if FS_Mensajes: print 'Resicion _Datos TX_QR600_VHK_E'
+            if len(rcv) > 0:
+                if (rcv.find('<') != -1 ) and (rcv.find('>') != -1) :
+                    #print rcv.find('<')
+                    #print rcv.find('>')
+                    ES_QR = rcv[rcv.find('<'): rcv.find('>')+1]
+                    #print 'QR: ' + ES_QR
                     Estado = 4
-                    Dato ="AA"+secuencia[1]+"AA"
+                    Dato =ES_QR
                 else:
-                    Dato_Hex = self.Convertir_Datos_Hex(rcv)
-                    if FS_Mensajes: print 'Datos RX_HEX:' + Dato_Hex
-                    Estado, Dato = self.Analisis_Trama_RX__QR600_VHK_E(Dato_Hex)
-                #print Estado
+                    secuencia = rcv.split("AA")
+                    #print len(secuencia)
+                    if len(secuencia) >=3:
+                        #print secuencia[1]
+                        Estado = 4
+                        Dato ="AA"+secuencia[1]+"AA"
+                    else:
+                        Dato_Hex = self.Convertir_Datos_Hex(rcv)
+                        if FS_Mensajes: print 'Datos RX_HEX:' + Dato_Hex
+                        Estado, Dato = self.Analisis_Trama_RX__QR600_VHK_E(Dato_Hex)
+                    #print Estado
 
 
-            if Estado != 0 and Estado != 1:
-                    if FS_Mensajes: print 'Resultado: ' + str(Estado) + ', ' + str (Dato)
+                if Estado != 0 and Estado != 1:
+                        if FS_Mensajes: print 'Resultado: ' + str(Estado) + ', ' + str (Dato)
+                        if      Estado == 2:    self.Decision_Tag( str(Dato) )
+                        elif    Estado == 3:    self.Decision_Teclado(Dato)
+                        elif    Estado == 4:    self.Decision_Qr(Dato)
+        except:
+            print 'Key Error no definidas'
 
-                    if      Estado == 2:    self.Decision_Tag( str(Dato) )
-                    elif    Estado == 3:    self.Decision_Teclado(Dato)
-                    elif    Estado == 4:    self.Decision_Qr(Dato)
     #---------------------------------------------------------
     def Analisis_Trama_RX__QR600_VHK_E(self,Tag_data):
-        if len(Tag_data) > 0:
-            #print Tag_data[0:5]
-            #print Tag_data.find(' aa 1')
-            #print 'Cadena balida: '+ Tag_data[Tag_data.find(' aa 1'):]
-            if Tag_data.find(' aa 1') > -1:
-                Tag_data = Tag_data[Tag_data.find(' aa 1'):]
+        try :
+            if len(Tag_data) > 0:
+                #print Tag_data[0:5]
+                #print Tag_data.find(' aa 1')
+                #print 'Cadena balida: '+ Tag_data[Tag_data.find(' aa 1'):]
+                if Tag_data.find(' aa 1') > -1:
+                    Tag_data = Tag_data[Tag_data.find(' aa 1'):]
+                if ' aa 1' in Tag_data[0:5]:
+                    if ' aa 1 97 1 0 7 1 b6'        in Tag_data:
+                        #print 'Peticion      : ' + Tag_data
+                        return 1, ""
+                    elif ' aa 1 c9 1 0 0 53 9c'  in Tag_data:
+                        #print 'Rx sin Nada   : ' + Tag_data
+                        return 1, ""
+                    elif ' aa 1 c8 '                in Tag_data:
+                        #print 'Datos         : ' + Tag_data
+                        Datos = Tag_data.split(" ")
+                        #print Datos[7]
+                        if Datos[7] != "1c": Tipo = int(Datos[7])
+                        else : return 0, "" #trama ireconosible o sim parametros
 
+                        #print 'Tipo          : ' + str(Tipo)
+                        if Tipo == 2:
+                            #covercion de formato de hex a decimal
+                            Numero =""
+                            for i in range(9 + int(Datos[8],base=16), 9, -1):  Numero += Datos[i]
+                            #print 'Tag o Targeta :'+ str(int(Numero,base=16))
+                            Decimal = int(Numero,base=16)
+                            return 2, Decimal
+                            #TX_datos_hex('Verde')
+                        elif Tipo == 3:
+                            #covercion de formato de desima a anssi numerico
+                            Numero =""
+                            for i in range(10, 10 + int(Datos[8],base=16)):  Numero += str(int(Datos[i])-30)
 
-            if ' aa 1' in Tag_data[0:5]:
-                if ' aa 1 97 1 0 7 1 b6'        in Tag_data:
-                    #print 'Peticion      : ' + Tag_data
-                    return 1, ""
-                elif ' aa 1 c9 1 0 0 53 9c'  in Tag_data:
-                    #print 'Rx sin Nada   : ' + Tag_data
-                    return 1, ""
-                elif ' aa 1 c8 '                in Tag_data:
-                    #print 'Datos         : ' + Tag_data
-                    Datos = Tag_data.split(" ")
-                    Tipo = int(Datos[7])# if Datos[7] != "1c" else 3
-                    #print 'Tipo          : ' + str(Tipo)
-                    if Tipo == 2:
-                        #covercion de formato de hex a decimal
-                        Numero =""
-                        for i in range(9 + int(Datos[8],base=16), 9, -1):  Numero += Datos[i]
-                        #print 'Tag o Targeta :'+ str(int(Numero,base=16))
-                        Decimal = int(Numero,base=16)
-                        return 2, Decimal
-                        #TX_datos_hex('Verde')
-                    elif Tipo == 3:
-                        #covercion de formato de desima a anssi numerico
-                        Numero =""
-                        for i in range(10, 10 + int(Datos[8],base=16)):  Numero += str(int(Datos[i])-30)
-
-                        #print 'Teclado   : ' + Numero
-                        return 3, Numero
-                        #TX_datos_hex('Verde')
+                            #print 'Teclado   : ' + Numero
+                            return 3, Numero
+                            #TX_datos_hex('Verde')
+                        else:
+                            #print 'No definido  : ' + Tag_data
+                            #TX_datos_hex('Rojo')
+                            return 0, ""
                     else:
-                        #print 'No definido  : ' + Tag_data
-                        #TX_datos_hex('Rojo')
+                        #print 'Otras      : ' + Tag_data
                         return 0, ""
-
-                else:
-                    #print 'Otras      : ' + Tag_data
-                    return 0, ""
+        except:
+            print 'Key Error no definidas'
+            return 0, ""
 
         return 0, ""
 
@@ -375,13 +385,31 @@ class LECTORAS(object):
     def Enrutar_Archivos_Salida(self):
         #print  self.Sede, self.Canal
 
-        if self.Canal in ['0', '3']:
+        if    self.Canal == '0':
+            self.Lectura_COM_NFC    = os.path.join(FIRM,HUB,COM_NFC)
+            self.Lectura_STATUS_NFC = os.path.join(FIRM,HUB,STATUS_NFC)
+
+            self.Lectura_COM_TECLADO     = os.path.join(FIRM,HUB,COM_TECLADO)
+            self.Lectura_STATUS_TECLADO  = os.path.join(FIRM,HUB,STATUS_TECLADO)
+
             self.Lectura_COM_QR      = os.path.join(FIRM,HUB,COM_QR)
             self.Lectura_STATUS_QR   = os.path.join(FIRM,HUB,STATUS_QR)
         elif  self.Canal == '1':
+            self.Lectura_COM_NFC    = os.path.join(FIRM,HUB,COM_NFC_S1)
+            self.Lectura_STATUS_NFC = os.path.join(FIRM,HUB,STATUS_NFC_S1)
+
+            self.Lectura_COM_TECLADO     = os.path.join(FIRM,HUB,COM_TECLADO_S1)
+            self.Lectura_STATUS_TECLADO  = os.path.join(FIRM,HUB,STATUS_TECLADO_S1)
+
             self.Lectura_COM_QR      = os.path.join(FIRM,HUB,COM_QR_S1)
             self.Lectura_STATUS_QR   = os.path.join(FIRM,HUB,STATUS_QR_S1)
         elif  self.Canal == '2':
+            self.Lectura_COM_NFC    = os.path.join(FIRM,HUB,COM_NFC_S2)
+            self.Lectura_STATUS_NFC = os.path.join(FIRM,HUB,STATUS_NFC_S2)
+
+            self.Lectura_COM_TECLADO     = os.path.join(FIRM,HUB,COM_TECLADO_S2)
+            self.Lectura_STATUS_TECLADO  = os.path.join(FIRM,HUB,STATUS_TECLADO_S2)
+
             self.Lectura_COM_QR      = os.path.join(FIRM,HUB,COM_QR_S2)
             self.Lectura_STATUS_QR   = os.path.join(FIRM,HUB,STATUS_QR_S2)
 
@@ -450,6 +478,9 @@ class LECTORAS(object):
         TecladoG = TecladoG.replace (">","")
         TecladoG = TecladoG.replace ("TC:","")
 
+        Clear_File(self.Lectura_COM_TECLADO)
+        Set_File(self.Lectura_COM_TECLADO, TecladoG)
+        """
         if self.Canal == '0':
             Clear_File(COM_TECLADO)             # Borrar TECLADO
             Set_File(COM_TECLADO, TecladoG)     # Guardar TECLADO
@@ -459,11 +490,15 @@ class LECTORAS(object):
         elif self.Canal == '2':
             Clear_File(COM_TECLADO_S2)          # Borrar TECLADO
             Set_File(COM_TECLADO_S2, TecladoG)  # Guardar TECLADO
+        """
     #---------------------------------------------------------
     def Activar_Teclado(self):
-        if   self.Canal == '0': Set_File(S0+STATUS_TECLADO, '1')    #Escrivir_Estados('1',8) # Cambiar estado del QR
-        elif self.Canal == '1': Set_File(S1+STATUS_TECLADO, '1')    #Escrivir_Estados('1',8) # Cambiar estado del QR
-        elif self.Canal == '2': Set_File(S2+STATUS_TECLADO, '1')    #Escrivir_Estados('1',8) # Cambiar estado del QR
+        Set_File(self.Lectura_STATUS_TECLADO, '1')
+        """
+        if   self.Canal == '0': Set_File(STATUS_TECLADO, '1')    #Escrivir_Estados('1',8) # Cambiar estado del QR
+        elif self.Canal == '1': Set_File(STATUS_TECLADO_S1, '1')    #Escrivir_Estados('1',8) # Cambiar estado del QR
+        elif self.Canal == '2': Set_File(STATUS_TECLADO_S2, '1')    #Escrivir_Estados('1',8) # Cambiar estado del QR
+        """
     #---------------------------------------------------------
     #----       Funciones Tag o Targeta
     #---------------------------------------------------------
@@ -521,9 +556,13 @@ class LECTORAS(object):
                 #Set_File(STATUS_REPEAT_QR, '2')    # Estado QR repetido
     #---------------------------------------------------------
     def Activar_Tag(self):
-        if   self.Canal == '0': Set_File(S0+STATUS_NFC, '1')    #Escrivir_Estados('1',8) # Cambiar estado del QR
-        elif self.Canal == '1': Set_File(S1+STATUS_NFC, '1')    #Escrivir_Estados('1',8) # Cambiar estado del QR
-        elif self.Canal == '2': Set_File(S2+STATUS_NFC, '1')    #Escrivir_Estados('1',8) # Cambiar estado del QR
+        Set_File(self.Lectura_STATUS_NFC, '1')
+
+        """
+        if   self.Canal == '0': Set_File(STATUS_NFC, '1')    #Escrivir_Estados('1',8) # Cambiar estado del QR
+        elif self.Canal == '1': Set_File(STATUS_NFC_S1, '1')    #Escrivir_Estados('1',8) # Cambiar estado del QR
+        elif self.Canal == '2': Set_File(STATUS_NFC_s2, '1')    #Escrivir_Estados('1',8) # Cambiar estado del QR
+        """
     #---------------------------------------------------------
     def Guardar_Tag(self,Tag):
 
@@ -532,15 +571,19 @@ class LECTORAS(object):
         TagG = TagG.replace ("TN:","")
         TagG = TagG.replace ("TR:","")
 
+        Clear_File(self.Lectura_COM_NFC)          # Borrar NFC
+        Set_File(self.Lectura_COM_NFC, TagG)      # Guardar NFC
+        """
         if self.Canal == '0':
-            Clear_File(S0+COM_NFC)          # Borrar NFC
-            Set_File(S0+COM_NFC, TagG)      # Guardar NFC
+            Clear_File(COM_NFC)          # Borrar NFC
+            Set_File(COM_NFC, TagG)      # Guardar NFC
         elif self.Canal == '1':
-            Clear_File(S1+COM_NFC)          # Borrar NFC
-            Set_File(S1+COM_NFC, TagG)      # Guardar NFC
+            Clear_File(COM_NFC_S1)          # Borrar NFC
+            Set_File(COM_NFC_S1, TagG)      # Guardar NFC
         elif self.Canal == '2':
-            Clear_File(S2+COM_NFC)          # Borrar NFC
-            Set_File(S2+COM_NFC, TagG)      # Guardar NFC
+            Clear_File(COM_NFC_S2)          # Borrar NFC
+            Set_File(COM_NFC_S2, TagG)      # Guardar NFC
+        """
     #---------------------------------------------------------
     #----       Funciones QR
     #---------------------------------------------------------
