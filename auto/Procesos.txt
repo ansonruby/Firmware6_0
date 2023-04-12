@@ -1,6 +1,5 @@
 @reboot (sleep 20; python /home/pi/Firmware/app/Mod_Serial.py) # Modulo Serial
 @reboot (sleep 20; python /home/pi/Firmware/app/Mod_Procesamiento.py) # Modulo Procesamiento
-@reboot (sleep 20; python /home/pi/Firmware/app/Mod_Validacion.py) # Modulo Validacion
 @reboot (sleep 20; python /home/pi/Firmware/app/Mod_Respuesta.py) # Modulo Respuesta
 @reboot (sleep 35; /home/pi/Firmware/sh/app_30_sleep.sh) # Teclado
 @reboot (sleep 20; python /home/pi/Firmware/app/Act_Buzzer.py) # Buzzer
