@@ -54,7 +54,7 @@ def Get_Mod_Validacion():
 def Get_Mod_Respuesta():
 	data = Get_File_Json(CONF_HUB)
 	return data["Mod_Respuesta"]
-#---------------------------------------------------------------------------------------	
+#---------------------------------------------------------------------------------------
 def Get_Lectoras():
 	data = Get_File_Json(CONF_HUB)
 	return data["Lectoras"]
@@ -66,7 +66,16 @@ def Get_Salidas():
 def Get_Pat_Server():
 	data = Get_File_Json(CONF_HUB)
 	return data["HUB"]["Ser_Dominio"], data["HUB"]["Ser_Ip"], data["HUB"]["Mejor_Coneccion"]
-
+#---------------------------------------------------------------------------------------
+def Get_Tipo_Dispositivo():
+	data = Get_File_Json(CONF_HUB)
+	return data["Dispositivo"]["Tipo"]
+#---------------------------------------------------------------------------------------
+#               pruebas
+#---------------------------------------------------------------------------------------
+#data = Get_File_Json(CONF_INTER_DISPO)
+#print ("Crontap: ", data["Crontap"])
+#print ("HUB: ", data["Config_Tipo_Dispo"]["HUB"])
 
 
 

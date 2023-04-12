@@ -34,6 +34,8 @@ from lib.Lib_settings import *  # importar con los mismos nombres
 MR_Mensajes = 0     # 0: NO print  1: Print
 Config_Mod  = Get_Mod_Respuesta()
 Tiempo_stop = float(Config_Mod['Time_Sleep_Mod'])
+Tipo_Dispositivo = Get_Tipo_Dispositivo()
+print Tipo_Dispositivo
 #---------------------------------------------------------
 #---------------------------------------------------------
 #----       Clase respuestas para lso diferentes dispsotyivos cae cat hub
@@ -68,71 +70,69 @@ class SALIDAS_ACCIONES(object):
                 Clear_File(self.COM_Respuesta)
     #---------------------------------------------------------
     def Enrutar_Archivos_Salidas(self):
-
-        if    self.Canal_lectora == '3':
+        global Tipo_Dispositivo
+        #-----------------------------------------------------------------------
+        if Tipo_Dispositivo == 'CAT_Lectora':
+            self.Salida_COM_LED     = os.path.join(FIRM,HUB,COM_LED)
+            self.Salida_COM_BUZZER  = os.path.join(FIRM,HUB,COM_BUZZER)
             self.COM_Respuesta      = os.path.join(FIRM,HUB,COM_RES)
-            """
-            # Para CAT esclavo
-            self.Salida_COM_RES     = S0 + COM_RES
-            self.Salida_COM_RELE    = S0 + COM_RELE
-            self.Salida_COM_LED     = S0 + COM_LED
-            self.Salida_COM_BUZZER  = S0 + COM_BUZZER
-            """
-        elif  self.Canal_lectora == '0': self.COM_Respuesta = os.path.join(FIRM,HUB,COM_RES)
-        elif  self.Canal_lectora == '1': self.COM_Respuesta = os.path.join(FIRM,HUB,COM_RES_S1)
-        elif  self.Canal_lectora == '2': self.COM_Respuesta = os.path.join(FIRM,HUB,COM_RES_S2)
-        #--------------------------------------------------------------------
-        if    self.Canal_rele == '0':   self.Salida_COM_RELE = os.path.join(FIRM,HUB,COM_RELE_S0)
-        elif  self.Canal_rele == '1':   self.Salida_COM_RELE = os.path.join(FIRM,HUB,COM_RELE_S1)
-        elif  self.Canal_rele == '2':   self.Salida_COM_RELE = os.path.join(FIRM,HUB,COM_RELE_S2)
-        if MR_Mensajes :
-            print 'Sede :', self.Sede
-            print 'Ruta Respuesta :', self.COM_Respuesta
-            print 'Ruta Rele :', self.Salida_COM_RELE
+            self.Salida_COM_RELE    = os.path.join(FIRM,HUB,COM_RELE_S0)
+            if MR_Mensajes :
+                print 'Buzzer :', self.Salida_COM_BUZZER
+                print 'Led :', self.Salida_COM_LED
+                print 'Sede :', self.Sede
+                print 'Ruta Respuesta :', self.COM_Respuesta
+                print 'Ruta Rele :', self.Salida_COM_RELE
+        #-----------------------------------------------------------------------
+        elif Tipo_Dispositivo == 'HUB':
+            if    self.Canal_lectora == '0': self.COM_Respuesta = os.path.join(FIRM,HUB,COM_RES)
+            elif  self.Canal_lectora == '1': self.COM_Respuesta = os.path.join(FIRM,HUB,COM_RES_S1)
+            elif  self.Canal_lectora == '2': self.COM_Respuesta = os.path.join(FIRM,HUB,COM_RES_S2)
+            #--------------------------------------------------------------------
+            if    self.Canal_rele == '0':   self.Salida_COM_RELE = os.path.join(FIRM,HUB,COM_RELE_S0)
+            elif  self.Canal_rele == '1':   self.Salida_COM_RELE = os.path.join(FIRM,HUB,COM_RELE_S1)
+            elif  self.Canal_rele == '2':   self.Salida_COM_RELE = os.path.join(FIRM,HUB,COM_RELE_S2)
+            if MR_Mensajes :
+                print 'Sede :', self.Sede
+                print 'Ruta Respuesta :', self.COM_Respuesta
+                print 'Ruta Rele :', self.Salida_COM_RELE
 
-        """
-        if self.Sede == 'S0':
 
-            if  self.Canal == '3':
-
-            elif  self.Canal == '0':    self.Salida_COM_RES     = S0 + COM_RES
-            elif  self.Canal == '1':    self.Salida_COM_RES     = S1 + COM_RES_S1
-            elif  self.Canal == '2':    self.Salida_COM_RES     = S2 + COM_RES_S2
-
-        elif self.Sede == 'S1':
-
-            if  self.Canal == '0':    self.Salida_COM_RES       = S0 + COM_RES
-            elif  self.Canal == '1':    self.Salida_COM_RES     = S1 + COM_RES_S1
-            elif  self.Canal == '2':    self.Salida_COM_RES     = S2 + COM_RES_S2
-
-        elif self.Sede == 'S2':
-
-            if  self.Canal == '0'  :    self.Salida_COM_RES     = S0 + COM_RES
-            elif  self.Canal == '1':    self.Salida_COM_RES     = S1 + COM_RES_S1
-            elif  self.Canal == '2':     self.Salida_COM_RES    = S2 + COM_RES_S2
-        if MR_Mensajes : print self.Salida_COM_RES
-        """
 
     #---------------------------------------------------------
     def Access_Entry_Users(self):
-
-        Set_File(self.Salida_COM_RELE,'Access granted-E')
-        if  self.Canal_lectora == 'S3':
+        global Tipo_Dispositivo
+        #--------------------------------------------------------------------
+        if Tipo_Dispositivo == 'HUB':
+            Set_File(self.Salida_COM_RELE,'Access granted-E')
+        #--------------------------------------------------------------------
+        elif Tipo_Dispositivo == 'CAT_Lectora':
+            Set_File(self.Salida_COM_RELE,'Access granted-E')
             Set_File(self.Salida_COM_LED,'Access granted-E')
             Set_File(self.Salida_COM_BUZZER , '1')           # activar sonido por 500*1
+
     #---------------------------------------------------------
     def Access_Out_Users(self):
-
-        Set_File(self.Salida_COM_RELE,'Access granted-S')
-        if  self.Canal_lectora == 'S3':
+        global Tipo_Dispositivo
+        #--------------------------------------------------------------------
+        if Tipo_Dispositivo == 'HUB':
+            Set_File(self.Salida_COM_RELE,'Access granted-S')
+        #--------------------------------------------------------------------
+        elif Tipo_Dispositivo == 'CAT_Lectora':
             Set_File(self.Salida_COM_LED,'Access granted-S')
             Set_File(self.Salida_COM_BUZZER , '1')           # activar sonido por 500*1
+
     #---------------------------------------------------------
     def Access_Denied_Users(self):
-        Set_File(self.Salida_COM_RELE,'Error')
-        if  self.Canal_lectora == 'S3':
+        global Tipo_Dispositivo
+        #--------------------------------------------------------------------
+        if Tipo_Dispositivo == 'HUB':
+            Set_File(self.Salida_COM_RELE,'Error')
+        #--------------------------------------------------------------------
+        elif Tipo_Dispositivo == 'CAT_Lectora':
             Set_File(self.Salida_COM_LED,'Error')
-            Set_File(self.Salida_COM_BUZZER, '1')           # activar sonido por 500*1
+            Set_File(self.Salida_COM_BUZZER , '1')           # activar sonido por 500*1
+
     #---------------------------------------------------------
     def Acciones_Dispositivo(self, Comando):
         #--------- para usuarios
