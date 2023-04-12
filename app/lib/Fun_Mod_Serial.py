@@ -412,6 +412,9 @@ class LECTORAS(object):
 
             self.Lectura_COM_QR      = os.path.join(FIRM,HUB,COM_QR_S2)
             self.Lectura_STATUS_QR   = os.path.join(FIRM,HUB,STATUS_QR_S2)
+        elif  self.Canal == '3':
+            self.Lectura_COM_QR      = os.path.join(FIRM,HUB,COM_QR)
+            self.Lectura_STATUS_QR   = os.path.join(FIRM,HUB,STATUS_QR)
 
         if FS_Mensajes  :
             print self.Sede,": " , self.Lectura_COM_QR

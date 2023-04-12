@@ -57,8 +57,9 @@ KEY_DISPO           = DISP + 'Key.txt'                                          
 #---------------------------------------------------------------------------------------
 #                                  Firmware
 #---------------------------------------------------------------------------------------
-CONF_HUB            = HUB + CONF + 'Config.json'                      # Configuraciones del hub global
-COM_FIRMWARE        = COMMA + 'Firmware/Com_Firmware.txt'                    # Configuraciones personalizadas del Firmware
+CONF_HUB            = HUB + CONF + 'Config.json'                                    # Configuracion global
+CONF_INTER_DISPO    = HUB + CONF + 'Config_Inter_Dispo.json'                        # Configuracion Interna_dispositivo
+COM_FIRMWARE        = COMMA + 'Firmware/Com_Firmware.txt'                           # Configuraciones personalizadas del Firmware
 
 #---------------------------------------------------------------------------------------
 #                                  Base de datos separacion por tipos de qr

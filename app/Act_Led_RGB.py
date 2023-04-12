@@ -37,6 +37,12 @@ import threading
 
 from lib.Lib_File import *  # importar con los mismos nombres
 from lib.Lib_Rout import *  # importar con los mismos nombres
+#from lib.Lib_settings import *  # importar con los mismos nombres
+
+def Get_Led():
+	data = Get_File_Json(CONF_HUB)
+	return int(data["Act_Led"]["Tiempo"]), data["Act_Led"]["Direccion"]
+
 
 #-----------------------------------------------------------
 #                       CONTANTES
@@ -53,6 +59,12 @@ pixel = neopixel.NeoPixel(PIXEL_PIN, num_pixels, pixel_order=ORDER)
 
 Comando_Antes = 0               #
 Salir_hilo = 0                  #
+
+#-----------------------------------------------------------
+#                   configuraciones para el led_RBG
+Direccion_Led   = 'D'
+Tiempo_Led      = 1
+Tiempo_Led, Direccion_Led = Get_Led()
 #-----------------------------------------------------------
 #                       DEFINICIONES
 #-----------------------------------------------------------
@@ -130,37 +142,40 @@ def Blink():
         if Salir_hilo == 0:             break;
 
 def Led_Derecha():
-    Tiempo_Rele =int(Get_File(S0+CONF_TIEM_RELE))
+    global Tiempo_Led, Direccion_Led
+    Tiempo_Rele = Tiempo_Led # int(Get_File(S0+CONF_TIEM_RELE))
     #-----  para visusalisaxcion en el teclado  del estado del usuario
-    Conf_Flecha =Get_File(S0+CONF_FLECHA_TECLADO)
-    if Conf_Flecha == 'Flecha':     Set_File(S0+STATUS_USER, '3')
-    else                      :     Set_File(S0+STATUS_USER, 'Permitido')
+    Conf_Flecha =Get_File(HUB+CONF_FLECHA_TECLADO)
+    if Conf_Flecha == 'Flecha':     Set_File(HUB+STATUS_USER, '3')
+    else                      :     Set_File(HUB+STATUS_USER, 'Permitido')
 
     Ejecutar_Comando('3')
     time.sleep(Tiempo_Rele)
     Ejecutar_Comando('0')
     #-----  para visusalisaxcion en el teclado  del estado del usuario
-    Clear_File(S0+STATUS_USER)
+    Clear_File(HUB+STATUS_USER)
 
 def Led_Izquierda():
-    Tiempo_Rele =int(Get_File(S0+CONF_TIEM_RELE))
+    global Tiempo_Led, Direccion_Led
+    Tiempo_Rele = Tiempo_Led # int(Get_File(S0+CONF_TIEM_RELE))
     #-----  para visusalisaxcion en el teclado  del estado del usuario
-    Conf_Flecha =Get_File(S0+CONF_FLECHA_TECLADO)
-    if Conf_Flecha == 'Flecha':     Set_File(S0+STATUS_USER, '4')
-    else                      :     Set_File(S0+STATUS_USER, 'Permitido')
+    Conf_Flecha =Get_File(HUB+CONF_FLECHA_TECLADO)
+    if Conf_Flecha == 'Flecha':     Set_File(HUB+STATUS_USER, '4')
+    else                      :     Set_File(HUB+STATUS_USER, 'Permitido')
     Ejecutar_Comando('4')
     time.sleep(Tiempo_Rele)
     Ejecutar_Comando('0')
     #-----  para visusalisaxcion en el teclado  del estado del usuario
-    Clear_File(S0+STATUS_USER)
+    Clear_File(HUB+STATUS_USER)
 
 def Led_Error():
-    Tiempo_Rele =int(Get_File(S0+CONF_TIEM_RELE))
+    global Tiempo_Led, Direccion_Led
+    Tiempo_Rele = Tiempo_Led # int(Get_File(S0+CONF_TIEM_RELE))
     rango = 10
     #-----  para visusalisaxcion en el teclado  del estado del usuario
-    Conf_Flecha =Get_File(S0+CONF_FLECHA_TECLADO)
-    if Conf_Flecha == 'Flecha':     Set_File(S0+STATUS_USER, '6')
-    else                      :     Set_File(S0+STATUS_USER, '6')
+    Conf_Flecha =Get_File(HUB+CONF_FLECHA_TECLADO)
+    if Conf_Flecha == 'Flecha':     Set_File(HUB+STATUS_USER, '6')
+    else                      :     Set_File(HUB+STATUS_USER, '6')
 
     for i in range(rango):
         Ejecutar_Comando('6')
@@ -170,7 +185,7 @@ def Led_Error():
 
     Ejecutar_Comando('0')
     #-----  para visusalisaxcion en el teclado  del estado del usuario
-    Clear_File(S0+STATUS_USER)
+    Clear_File(HUB+STATUS_USER)
 
 def Activar_Hilo_Comando():
     global B_Hilo_Comado
@@ -183,13 +198,14 @@ def Eventos_Led():
     global Comando_Antes
     global Salir_hilo
     global B_Hilo_Entrada, B_Hilo_Salir, B_Hilo_Error
+    global Tiempo_Led, Direccion_Led
 
     while (True):
         time.sleep(0.1)
-        Comando =Get_File(S0+COM_LED)
+        Comando = Get_File(HUB+COM_LED)
         if Comando != '':
             if Comando == 'Access granted-E':
-                Direc = Get_File(S0+CONF_DIREC_RELE)   #Leer_Archivo(13)  # Direccion_Torniquete
+                Direc = Direccion_Led # Get_File(S0+CONF_DIREC_RELE)   #Leer_Archivo(13)  # Direccion_Torniquete
                 if Direc == 'D':
                     #Salir()
                     if B_Hilo_Salir.isAlive() is False:
@@ -201,11 +217,11 @@ def Eventos_Led():
                         B_Hilo_Entrada   = threading.Thread(target=Led_Izquierda)
                         B_Hilo_Entrada.start()
 
-                Clear_File(S0+COM_LED)
+                Clear_File(HUB+COM_LED)
 
             elif Comando == 'Access granted-S':
                 #print ('S')
-                Direc = Get_File(S0+CONF_DIREC_RELE)   #Leer_Archivo(13)  # Direccion_Torniquete
+                Direc = Direccion_Led # Get_File(S0+CONF_DIREC_RELE)   #Leer_Archivo(13)  # Direccion_Torniquete
                 if Direc == 'D':
                     #Entrar()
                     if B_Hilo_Entrada.isAlive() is False:
@@ -217,7 +233,7 @@ def Eventos_Led():
                         B_Hilo_Salir   = threading.Thread(target=Led_Derecha)
                         B_Hilo_Salir.start()
 
-                Clear_File(S0+COM_LED)
+                Clear_File(HUB+COM_LED)
 
             elif Comando == 'Error':
 
@@ -225,7 +241,7 @@ def Eventos_Led():
                     B_Hilo_Error   = threading.Thread(target=Led_Error)
                     B_Hilo_Error.start()
 
-                Clear_File(S0+COM_LED)
+                Clear_File(HUB+COM_LED)
 
             elif Comando != Comando_Antes :
                 #print (Comando)
@@ -236,7 +252,7 @@ def Eventos_Led():
                     Activar_Hilo_Comando()
                 else :
                     Ejecutar_Comando(Comando)
-                Clear_File(S0+COM_LED)
+                Clear_File(HUB+COM_LED)
 
 
 #-------------------------------------------------------
@@ -255,6 +271,7 @@ B_Hilo_Error    = threading.Thread(target=Led_Error)    #
 #-----------------------------------------------------------
 #               Pruebas de funcioanmiento
 #-----------------------------------------------------------
+
 
 Eventos_Led()
 

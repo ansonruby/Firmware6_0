@@ -12,15 +12,8 @@
     "Lectoras": [
         {
             "Locacion": "S0",
-            "Nombre": "QR600-VHK-E",
-            "Puerto": "0",
-            "Direccion":"ENTRY"
-        },
-        {
-            "Locacion":"S0",
-            "Nombre": "QR600-VHK-E",
-            "Puerto": "1",
-            "Direccion":"EXIT"
+            "Nombre": "YHD_M800D_TTL",
+            "Puerto": "3"
         }
     ],
     "Mod_Actualizaciones":
@@ -31,7 +24,7 @@
             "Usuarios_Inicio": "True",
             "Actualizaciones_Periodo": "10"
         },
-    "Mod_Procesamiento": 
+    "Mod_Procesamiento":
         {
             "Time_Sleep_Mod": "0.3",
             "Lectura_QR":"True",
@@ -46,7 +39,7 @@
         {
             "Time_Sleep_Mod": "0.5"
         },
-    "Mod_Validacion": 
+    "Mod_Validacion":
         {
             "Configuracion_Acceso": "Acceso fisico"
         },
@@ -57,17 +50,19 @@
             "Direccion": "I",
             "Tiempo": "1",
             "Tipo": "Rele"
-        },
-        {
-            "Locacion":"S0",
-            "Puerto": "1",
-            "Direccion": "D",
-            "Tiempo": "1",
-            "Tipo": "Rele"
         }
     ],
     "Teclado": {
         "Tiempo": "1",
         "Visualizar": "Flecha"
+    },
+    "Act_Led": {
+        "Tiempo": "1",
+        "Direccion": "D",
+        "Visualizar": "Flecha"
+    },
+    "Dispositivo": {
+        "Tipo": "CAT_Lectora"
     }
+
 }

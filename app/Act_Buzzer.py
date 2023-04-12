@@ -64,9 +64,9 @@ def sonido(Rango):                                           # Funcion para Acti
 def Control_Sonidos_Por_Archivo():                          # Seleccion de sonido
 
     global Tiempo_sonido
-    Dato = Get_File(S0 + COM_BUZZER)
+    Dato = Get_File(HUB + COM_BUZZER)
     if len(Dato) >= 1 :
-        Clear_File(S0 + COM_BUZZER)
+        Clear_File(HUB + COM_BUZZER)
         if      (Dato =='0'): sonido(Tiempo_sonido*1)
         elif    (Dato =='1'): sonido(Tiempo_sonido*2)
         elif    (Dato =='2'): sonido(Tiempo_sonido*3)
