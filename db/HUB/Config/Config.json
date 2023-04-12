@@ -12,8 +12,13 @@
     "Lectoras": [
         {
             "Locacion": "S0",
-            "Nombre": "YHD_M800D_TTL",
-            "Puerto": "3"
+            "Nombre": "QR600-VHK-E",
+            "Puerto": "0"
+        },
+        {
+            "Locacion":"S0",
+            "Nombre": "QR600-VHK-E",
+            "Puerto": "1"
         }
     ],
     "Mod_Actualizaciones":
