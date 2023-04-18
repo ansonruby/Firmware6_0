@@ -65,10 +65,10 @@ if Config_Mod['Usuarios_Inicio'] != "False":
     Bandera_Inicio_Usuario = 1
 
 Bandera_Periodo_Autorizacion = 0
-Timepo_periodo_Autorizacion=10
+Tiempo_periodo_Autorizacion=10
 if Config_Mod['Actualizaciones_Periodo'] != "False":
     Bandera_Periodo_Autorizacion = 1
-    Timepo_periodo_Autorizacion=int(Config_Mod['Actualizaciones_Periodo'])
+    Tiempo_periodo_Autorizacion=int(Config_Mod['Actualizaciones_Periodo'])
 
 
 
@@ -101,6 +101,35 @@ def Sort_data(Data_json):
         except Exception as e:
             print 'Error en el buffer'#posiblemente por que no exite la lacacion
 #---------------------------------------------------------
+def Sort_updated_data(Data_json):
+    #load deleted and updated data
+    # for Location in Data_json.keys():
+    #     #print Location
+    #     Ruta_Location = os.path.join(FIRM,'db',Location,NEW_DATA[:-1]+'_New')
+    #     Ruta_Location_BK = os.path.join(FIRM,'db',Location,NEW_DATA[:-1]+'_BK')
+    #     Ruta_Location_ACT = os.path.join(FIRM,'db',Location,NEW_DATA[:-1])
+    #     Delete_directory(Ruta_Location)
+    #     Delete_directory(Ruta_Location_BK)
+    #     #print Ruta_Location
+    #     Create_Directory_new(Ruta_Location)
+    #     Data_Location= Data_json[Location]
+    #     for Tipo in Data_Location.keys():
+    #         #print Tipo
+    #         Ruta_Dato = os.path.join(Ruta_Location, Tipo+'.txt' )
+    #         #print Ruta_Dato
+    #         Data_Tipo= Data_Location[Tipo]#lista ordenada
+    #         Data_Tipo = "\n".join(Data_Tipo) + "\n"
+    #         #print Data_Tipo
+    #         Create_Set_File(Ruta_Dato, Data_Tipo) # Crear Archivo y llenado
+    #     # intercambair buffer
+    #     try:
+    #         os.rename(Ruta_Location_ACT, Ruta_Location_BK)
+    #         os.rename(Ruta_Location, Ruta_Location_ACT)
+    #         Delete_directory(Ruta_Location_BK)
+    #         #return 1
+    #     except Exception as e:
+    #         print 'Error en el buffer'#posiblemente por que no exite la lacacion
+#---------------------------------------------------------
 def Hora_Actual():
 	tiempo_segundos = time.time()
 	#print(tiempo_segundos)
@@ -113,6 +142,12 @@ def Actualizacion_Usuarios():
     Data_sen = send_petition("get_users")
     if Data_sen != False and Data_sen.ok:
         Sort_data(Data_sen.json())
+#---------------------------------------------------------
+def Actualizacion_Usuarios_Periodica():
+    #send json with all indexes of location
+    Data_sen = send_petition("get_users_periodic")
+    if Data_sen != False and Data_sen.ok:
+        Sort_updated_data(Data_sen.json())
 #---------------------------------------------------------
 def Hora_Actualizacion_Usuarios(Hora_Actualizacion):
     global Data_simulada,MA_Mensajes
@@ -132,7 +167,7 @@ def Periodo_Actualizacion_Usuarios(Periodo):
     if T_transcurido >= Periodo :
         if MA_Mensajes: print 'Periodo_Actualizacion_Usuarios'
         T_Antes = T_Antes = time.time()
-        Actualizacion_Usuarios()
+        Actualizacion_Usuarios_Periodica()
 #---------------------------------------------------------
 def send_autorizations():
     global MA_Mensajes
@@ -214,7 +249,7 @@ while 1:
     #---------------------------------------------------------
     #  Proceso 4:Enviar usuarios a servidor periodicamente si hay
     #---------------------------------------------------------
-    if Bandera_Periodo_Autorizacion: Periodo_send_autorizations(Timepo_periodo_Autorizacion)
+    if Bandera_Periodo_Autorizacion: Periodo_send_autorizations(Tiempo_periodo_Autorizacion)
 
 
 #-------------------------------------
