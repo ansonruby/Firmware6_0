@@ -11,7 +11,7 @@ fixed_urls = {
     "grant": "/api/access/grant",
     "send_autorizations": "/api/scan_devices/send_authorizations_hub",
     "online_backup": "/api/access/validate_access",
-    "get_users_periodic": "/api/scan_devices/get_recent_granted_access",
+    "get_users_periodic": "/api/scan_devices/get_dynamic_granted_access",
     "3": "/api/access/verify_conection",
     "4": "/api/firmware/review_update",
     "5": "/api/firmware/confirm_update"
@@ -71,4 +71,4 @@ def Get_Rout_server():
 # print send_petition("get_users")
 # print send_petition("/api/access/get_granted_users_pi")
 # print send_petition("http://localhost:3000/api/access/get_granted_users_pi")
-# print send_petition("send_autorizations", method="POST", data={"data": "a1b2"})
+# print send_petition("send_autorizations", method="POST", json_data={"data": "a1b2"})

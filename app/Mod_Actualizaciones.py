@@ -35,6 +35,7 @@ import os
 from lib.Lib_Request_Json import *            # importar con los mismos nombres
 from lib.Fun_Dispositivo import *   #
 from lib.Lib_settings import Get_Mod_Actualizaciones
+from lib.Lib_Binary_Search import Get_List_Indexes
 
 #-----------------------------------------------------------
 #                       CONTANTES
@@ -102,33 +103,8 @@ def Sort_data(Data_json):
             print 'Error en el buffer'#posiblemente por que no exite la lacacion
 #---------------------------------------------------------
 def Sort_updated_data(Data_json):
-    #load deleted and updated data
-    # for Location in Data_json.keys():
-    #     #print Location
-    #     Ruta_Location = os.path.join(FIRM,'db',Location,NEW_DATA[:-1]+'_New')
-    #     Ruta_Location_BK = os.path.join(FIRM,'db',Location,NEW_DATA[:-1]+'_BK')
-    #     Ruta_Location_ACT = os.path.join(FIRM,'db',Location,NEW_DATA[:-1])
-    #     Delete_directory(Ruta_Location)
-    #     Delete_directory(Ruta_Location_BK)
-    #     #print Ruta_Location
-    #     Create_Directory_new(Ruta_Location)
-    #     Data_Location= Data_json[Location]
-    #     for Tipo in Data_Location.keys():
-    #         #print Tipo
-    #         Ruta_Dato = os.path.join(Ruta_Location, Tipo+'.txt' )
-    #         #print Ruta_Dato
-    #         Data_Tipo= Data_Location[Tipo]#lista ordenada
-    #         Data_Tipo = "\n".join(Data_Tipo) + "\n"
-    #         #print Data_Tipo
-    #         Create_Set_File(Ruta_Dato, Data_Tipo) # Crear Archivo y llenado
-    #     # intercambair buffer
-    #     try:
-    #         os.rename(Ruta_Location_ACT, Ruta_Location_BK)
-    #         os.rename(Ruta_Location, Ruta_Location_ACT)
-    #         Delete_directory(Ruta_Location_BK)
-    #         #return 1
-    #     except Exception as e:
-    #         print 'Error en el buffer'#posiblemente por que no exite la lacacion
+    print Data_json
+
 #---------------------------------------------------------
 def Hora_Actual():
 	tiempo_segundos = time.time()
@@ -144,8 +120,18 @@ def Actualizacion_Usuarios():
         Sort_data(Data_sen.json())
 #---------------------------------------------------------
 def Actualizacion_Usuarios_Periodica():
-    #send json with all indexes of location
-    Data_sen = send_petition("get_users_periodic")
+    indexes_to_review = {}
+    db_path=os.path.join(FIRM,'db')
+    locations = [location for location in os.listdir(db_path) if location.startswith("S")]
+    for location in locations:
+        indexes_to_review[location]={}
+        tipos_path=os.path.join(db_path, location, NEW_DATA[:-1])
+        tipos = os.listdir(tipos_path)
+        for tipo in tipos:
+            indexes_path=os.path.join(tipos_path,tipo)
+            indexes_to_review[location][tipo.split(".")[0]]=Get_List_Indexes(indexes_path)
+    print json.dumps(indexes_to_review)
+    Data_sen = send_petition("get_users_periodic",method="POST", json_data=indexes_to_review)
     if Data_sen != False and Data_sen.ok:
         Sort_updated_data(Data_sen.json())
 #---------------------------------------------------------
