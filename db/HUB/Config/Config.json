@@ -60,7 +60,7 @@
         },
         {
             "Locacion": "S0",
-            "Puerto": "0",
+            "Puerto": "1",
             "Direccion": "I",
             "Tiempo": "1",
             "Tipo": "Rele"
