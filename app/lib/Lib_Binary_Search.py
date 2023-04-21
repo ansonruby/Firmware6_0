@@ -121,7 +121,7 @@ def Binary_Remove_Id(file_name, user_id_data):
     if find:
         line = position + 1
         Clear_Line(file_name, line)
-        if line == len(db):
+        if line != 1 and line == len(db):
             Update_Line(file_name, line-1, Get_Line(file_name, line-1).strip())
     return line
 # -------------------------------------------------------
@@ -141,7 +141,9 @@ def Binary_Update_Id(file_name, user_id_data):
                 line += 1
         except:
             pass
-        if line <= len(db):
+        if line == 1 and db[0].strip()=="":
+            Set_File(file_name, data)
+        elif line <= len(db):
             Add_Line_Pos(file_name, line, data + "\n")
         else:
             Add_Line_End(file_name,  "\n" + data)

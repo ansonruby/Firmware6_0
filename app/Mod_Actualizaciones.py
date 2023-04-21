@@ -35,7 +35,7 @@ import os
 from lib.Lib_Request_Json import *            # importar con los mismos nombres
 from lib.Fun_Dispositivo import *   #
 from lib.Lib_settings import Get_Mod_Actualizaciones
-from lib.Lib_Binary_Search import Get_List_Indexes
+from lib.Lib_Binary_Search import Get_List_Indexes, Binary_Update_Id, Binary_Remove_Id
 
 #-----------------------------------------------------------
 #                       CONTANTES
@@ -90,7 +90,7 @@ def Sort_data(Data_json):
             Ruta_Dato = os.path.join(Ruta_Location, Tipo+'.txt' )
             #print Ruta_Dato
             Data_Tipo= Data_Location[Tipo]#lista ordenada
-            Data_Tipo = "\n".join(Data_Tipo) + "\n"
+            Data_Tipo = "\n".join(Data_Tipo) 
             #print Data_Tipo
             Create_Set_File(Ruta_Dato, Data_Tipo) # Crear Archivo y llenado
         # intercambair buffer
@@ -103,7 +103,25 @@ def Sort_data(Data_json):
             print 'Error en el buffer'#posiblemente por que no exite la lacacion
 #---------------------------------------------------------
 def Sort_updated_data(Data_json):
-    print Data_json
+    update_data = Data_json["created_index_data"]
+    delete_data = Data_json["deleted_index_data"]
+    for location in update_data.keys():
+        for tipo in update_data[location].keys():
+            tipo_path = os.path.join(
+                FIRM, 'db', location, NEW_DATA[:-1], tipo+'.txt')
+
+            #Create and update indexes
+            for index_data in update_data[location][tipo]:
+                if index_data=="":
+                    continue
+                Binary_Update_Id(tipo_path,index_data)
+
+            #Delete indexes
+            if location in delete_data and tipo in delete_data[location]:
+                for index_data in delete_data[location][tipo]:
+                    if index_data=="":
+                        continue
+                    Binary_Remove_Id(tipo_path,index_data)           
 
 #---------------------------------------------------------
 def Hora_Actual():
@@ -130,7 +148,6 @@ def Actualizacion_Usuarios_Periodica():
         for tipo in tipos:
             indexes_path=os.path.join(tipos_path,tipo)
             indexes_to_review[location][tipo.split(".")[0]]=Get_List_Indexes(indexes_path)
-    print json.dumps(indexes_to_review)
     Data_sen = send_petition("get_users_periodic",method="POST", json_data=indexes_to_review)
     if Data_sen != False and Data_sen.ok:
         Sort_updated_data(Data_sen.json())

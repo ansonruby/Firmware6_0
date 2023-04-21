@@ -24,10 +24,10 @@
     "Mod_Actualizaciones":
         {
             "Time_Sleep_Mod": "2",
-            "Usuarios_Periodo": "10",
-            "Usuarios_Time": "05:38 PM",
+            "Usuarios_Periodo": "300",
+            "Usuarios_Time": "02:00 AM",
             "Usuarios_Inicio": "True",
-            "Actualizaciones_Periodo": "10"
+            "Actualizaciones_Periodo": "3000"
         },
     "Mod_Procesamiento":
         {

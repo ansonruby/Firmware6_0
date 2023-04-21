@@ -11,7 +11,7 @@ fixed_urls = {
     "grant": "/api/access/grant",
     "send_autorizations": "/api/scan_devices/send_authorizations_hub",
     "online_backup": "/api/access/validate_access",
-    "get_users_periodic": "/api/scan_devices/get_dynamic_granted_access",
+    "get_users_periodic": "/api/scan_devices/get_dynamic_granted_access_hub",
     "3": "/api/access/verify_conection",
     "4": "/api/firmware/review_update",
     "5": "/api/firmware/confirm_update"
