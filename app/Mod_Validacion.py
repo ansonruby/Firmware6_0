@@ -324,7 +324,7 @@ def Definir_Direccion(access_key, user_index, lectora):
                 dfw.write(users_in)
                 dfw.close()
 
-        return str(get_direction_of_reader(lectora))
+        return str(int(get_direction_of_reader(lectora)))
     elif config_access == "Acceso dinamico":
         if access_key and access_key != "":
             users_in = ""
@@ -447,4 +447,4 @@ def get_direction_of_reader(lectora):
     # 0 for entrys
     # 1 for exits
 
-    return int(lectora) % 2
+    return int(int(lectora) % 2)
