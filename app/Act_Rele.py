@@ -116,7 +116,7 @@ class ACTUADOR_RELES(object):
             if  self.Direccion_Rele == 'D':    self.Activar_salida()  #Salir()
             else :                             self.Activar_Entrada() #Entrar()
         elif    Res == 'Access granted-S':
-            if  self.Direccion_Rele == 'D':    self.Activar_Entrada() #Entrar()
+            if  self.Direccion_Rele == 'I':    self.Activar_Entrada() #Entrar()
             else :                             self.Activar_salida()  #Salir()
     #-----------------------------------------------------------
     def Ciclo_Rele(self):
