@@ -4,6 +4,7 @@ from lib.Fun_Tipo_NFC import MD5
 from lib.Lib_Binary_Search import Binary_Search_Id, Binary_Remove_Id
 from lib.Lib_Request_Json import send_petition
 from lib.Lib_settings import Get_Mod_Validacion, Get_Lectoras
+from Mod_Actualizaciones import send_autorizations
 import json
 import re
 import time
@@ -29,9 +30,9 @@ def Validar_Acceso(access_code, tipo_acceso, medio_acceso, lectora):
         valid_access = Validar_NFC(access_code, tipo_acceso, lectora)
 
     if valid_access:
-        user_index, direction_ref = valid_access
+        user_index, direction_ref, access_limit_quantity = valid_access
         Enviar_Respuesta(user_index, tipo_acceso,
-                         medio_acceso, lectora, direction_ref)
+                         medio_acceso, lectora, direction_ref, access_limit_quantity)
     else:
         Respaldo_Online({
             "access_type": tipo_acceso,
@@ -67,6 +68,7 @@ def Validar_QR(access_code, tipo_acceso, lectora):
     extra_data = final_data[time_len:]
 
     direction_ref = False
+    access_limit_quantity = 0
     invitation_index = False
 
     if tipo_acceso in [4]:
@@ -106,12 +108,21 @@ def Validar_QR(access_code, tipo_acceso, lectora):
     if tipo_acceso in [1, 2, 5]:
         direction_ref = db_data[-1]
 
-    user_in_index = Buscar_usuario_adentro(direction_ref, lectora)
-    if user_in_index:
-        if tipo_acceso in [2, 4]:
-            return (user_in_index, direction_ref)
-        else:
-            return (user_index, direction_ref)
+    if tipo_acceso in [1]:
+        access_limit_quantity = int(db_data[2])
+
+    user_in_data = Buscar_usuario_adentro(
+        direction_ref, lectora)
+
+    if user_in_data:
+        user_in_index, user_access_quantity = user_in_data
+        if access_limit_quantity != 0 and access_limit_quantity <= user_access_quantity:
+            return False
+        elif user_access_quantity % 1 != 0:
+            if tipo_acceso in [2, 4]:
+                return (user_in_index, direction_ref, access_limit_quantity)
+            else:
+                return (user_index, direction_ref, access_limit_quantity)
 
     if tipo_acceso in [1, 5]:
         week_schedules = json.loads(db_data[1])
@@ -172,7 +183,7 @@ def Validar_QR(access_code, tipo_acceso, lectora):
         else:
             return False
 
-    return (str(user_index), direction_ref)
+    return (str(user_index), direction_ref, access_limit_quantity)
 
 
 def Validar_PIN(access_code, tipo_acceso, lectora):
@@ -275,10 +286,10 @@ def Validar_NFC(access_code, tipo_acceso, lectora):
         return (direction_ref, direction_ref)
 
 
-def Buscar_usuario_adentro(access_key, lectora):
+def Buscar_usuario_adentro(access_key,  lectora):
     global config_access
     location = get_location_of_reader(lectora)
-    if (config_access == "Acceso fisico" and get_direction_of_reader(lectora)) or config_access == "Acceso dinamico":
+    if (config_access == "Acceso fisico" and get_direction_of_reader(lectora) == 1) or config_access == "Acceso dinamico":
         if access_key and access_key != "":
             users_in = ""
             with open(location+TAB_USER_IN, 'r') as df:
@@ -292,10 +303,10 @@ def Buscar_usuario_adentro(access_key, lectora):
             if not str(access_key) in users_in_json:
                 return False
 
-            return users_in_json[str(access_key)][0] if int(users_in_json[str(access_key)][1]) % 2 else False
+            return users_in_json[str(access_key)][0:2]
 
 
-def Definir_Direccion(access_key, user_index, lectora):
+def Definir_Direccion(access_key, user_index, access_limit_quantity, lectora):
     global config_access
 
     direction = "0"
@@ -337,10 +348,17 @@ def Definir_Direccion(access_key, user_index, lectora):
                 users_in_json = {}
 
             if str(access_key) in users_in_json:
-                direction = "1"
-                users_in_json.pop(str(access_key))
+                if int(access_limit_quantity) != 0:
+                    access_cycle = users_in_json[str(access_key)][1]
+                    if (access_cycle % 1) != 0:
+                        direction = "1"
+                    users_in_json[str(access_key)] = [
+                        user_index, access_cycle + 0.5]
+                else:
+                    direction = "1"
+                    users_in_json.pop(str(access_key))
             else:
-                users_in_json[str(access_key)] = [user_index, "1"]
+                users_in_json[str(access_key)] = [user_index, 0.5]
             users_in = json.dumps(users_in_json, indent=4)
 
             with open(location+TAB_USER_IN, 'w') as dfw:
@@ -350,7 +368,7 @@ def Definir_Direccion(access_key, user_index, lectora):
         return direction
 
 
-def Enviar_Respuesta(user_index, tipo_acceso, medio_acceso, lectora, direction_ref):
+def Enviar_Respuesta(user_index, tipo_acceso, medio_acceso, lectora, direction_ref, access_limit_quantity):
     respuesta_acceso = "Access denied"
     if user_index:
         direction = "0"
@@ -358,7 +376,7 @@ def Enviar_Respuesta(user_index, tipo_acceso, medio_acceso, lectora, direction_r
         if tipo_acceso != 3:
             # Cambiar el id en la tabla autorizados para invitaciones multiples usos
             direction = Definir_Direccion(
-                str(direction_ref), user_index, lectora)
+                str(direction_ref), user_index, access_limit_quantity, lectora)
 
         respuesta_acceso = "Access granted-E" if direction == "0" else "Access granted-S"
         read_time = int(time.time()*1000)
@@ -400,6 +418,7 @@ def Respaldo_Online(data, lectora):
                 respuesta_acceso = respuesta_server.text
                 respuesta_acceso = respuesta_acceso if "Access granted" in respuesta_acceso else "Access denied"
         else:
+            send_autorizations()
             respuesta_server = send_petition(
                 "online_backup", method="POST", json_data=data)
             if respuesta_server and respuesta_server.ok:
@@ -407,7 +426,7 @@ def Respaldo_Online(data, lectora):
                 respuesta_acceso = respuesta_server["access_answer"]
                 if "Access granted" in respuesta_server["access_answer"]:
                     Definir_Direccion(
-                        respuesta_server["user_id"], respuesta_server["user_index"], lectora)
+                        respuesta_server["user_id"], respuesta_server["user_index"], respuesta_server["access_limit_quantity"], lectora)
     except:
         pass
 

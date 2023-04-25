@@ -231,40 +231,40 @@ def Actualizar_Inicio_Usuarios():
     if MA_Mensajes: print 'Actualizar_Inicio_Usuarios'
     Actualizacion_Usuarios()
 
+if __name__ == '__main__':
+    print Hora_Actual()
 
-print Hora_Actual()
+    if Bandera_Inicio_Usuario: Actualizar_Inicio_Usuarios()
 
-if Bandera_Inicio_Usuario: Actualizar_Inicio_Usuarios()
-
-while 1:
-    #---------------------------------------------------------
-    #  Proceso 1: Tiempo de espera para disminuir proceso
-    #---------------------------------------------------------
-    time.sleep(Tiempo_stop) #minimo 1
-    #---------------------------------------------------------
-    # Proceso 2: Actualizar base de datos en una hora determinada ("12:10 AM") # 12:00 AM     03:59 PM # hora chile  10:00 PM 12:10 AM
-    #---------------------------------------------------------
-    if Bandera_Hora_Usuario: Hora_Actualizacion_Usuarios(Hora_Usuario)
-    #---------------------------------------------------------
-    # Proceso 3: Actualizar base de datos por periodos de tiempos minimo 1 segundo,  60*1 ->1 minuto
-    #---------------------------------------------------------
-    if Bandera_Periodo_Usuario: Periodo_Actualizacion_Usuarios(Tiempo_periodo_Usuarios)
-    #---------------------------------------------------------
-    #  Proceso 4:Enviar usuarios a servidor periodicamente si hay
-    #---------------------------------------------------------
-    if Bandera_Periodo_Autorizacion: Periodo_send_autorizations(Tiempo_periodo_Autorizacion)
+    while 1:
+        #---------------------------------------------------------
+        #  Proceso 1: Tiempo de espera para disminuir proceso
+        #---------------------------------------------------------
+        time.sleep(Tiempo_stop) #minimo 1
+        #---------------------------------------------------------
+        # Proceso 2: Actualizar base de datos en una hora determinada ("12:10 AM") # 12:00 AM     03:59 PM # hora chile  10:00 PM 12:10 AM
+        #---------------------------------------------------------
+        if Bandera_Hora_Usuario: Hora_Actualizacion_Usuarios(Hora_Usuario)
+        #---------------------------------------------------------
+        # Proceso 3: Actualizar base de datos por periodos de tiempos minimo 1 segundo,  60*1 ->1 minuto
+        #---------------------------------------------------------
+        if Bandera_Periodo_Usuario: Periodo_Actualizacion_Usuarios(Tiempo_periodo_Usuarios)
+        #---------------------------------------------------------
+        #  Proceso 4:Enviar usuarios a servidor periodicamente si hay
+        #---------------------------------------------------------
+        if Bandera_Periodo_Autorizacion: Periodo_send_autorizations(Tiempo_periodo_Autorizacion)
 
 
-#-------------------------------------
-# pruebas de uso
-#-------------------------------------
-#actualizacion de usuario se realisa todo al mismo timepo ,
-# posiblemente hay que separa para cada configuracion de locacion
-# falta realisa hilos por cada accion par que cada una sea separada
-#Actualizacion_Usuarios()
-#send_autorizations()
-"""
-while 1:
-    Periodo_send_autorizations(6)
-"""
-#print S0+STATUS_QR_S1
+    #-------------------------------------
+    # pruebas de uso
+    #-------------------------------------
+    #actualizacion de usuario se realisa todo al mismo timepo ,
+    # posiblemente hay que separa para cada configuracion de locacion
+    # falta realisa hilos por cada accion par que cada una sea separada
+    #Actualizacion_Usuarios()
+    #send_autorizations()
+    """
+    while 1:
+        Periodo_send_autorizations(6)
+    """
+    #print S0+STATUS_QR_S1

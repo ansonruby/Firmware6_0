@@ -48,7 +48,7 @@
         },
     "Mod_Validacion":
         {
-            "Configuracion_Acceso": "Acceso fisico"
+            "Configuracion_Acceso": "Acceso dinamico"
         },
     "Reles": [
         {
