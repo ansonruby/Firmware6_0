@@ -34,7 +34,7 @@ def Filtro_Tipos_QR_Antiguo(access_code, medio_acceso=1, lectora=0):
             Respaldo_Online({
                 "access_medium": medio_acceso,
                 "access_code": access_code,
-                "data":access_code,
+                "data": access_code,
                 "old_qr_code": True
             }, lectora)
             break
@@ -77,7 +77,7 @@ def Filtro_Tipos_Acceso(access_code, medio_acceso, lectora):
         Respaldo_Online({
             "access_medium": medio_acceso,
             "access_code": access_code,
-            "access_type":tipo_acceso,
+            "access_type": tipo_acceso,
             "reader": lectora
         }, lectora)
 
@@ -105,19 +105,20 @@ def Recibir_Codigo_Accesso():
         (STATUS_NFC_S2, COM_NFC_S2)
     ]
 
-    read_paths = []
+    read_paths = {}
     if "Lectura_QR" in Configs and str(Configs["Lectura_QR"]).lower() == "true":
-        read_paths += qr_read_paths
+        read_paths["1"] = qr_read_paths
     if "Lectura_Teclado" in Configs and str(Configs["Lectura_Teclado"]).lower() == "true":
-        read_paths += keyboard_read_paths
+        read_paths["2"] = keyboard_read_paths
     if "Lectura_NFC" in Configs and str(Configs["Lectura_NFC"]).lower() == "true":
-        read_paths += nfc_read_paths
+        read_paths["11"] = nfc_read_paths
 
-    for lectora, (status, command) in enumerate(read_paths):
-        if Get_File(os.path.join(FIRM, HUB, status)) == '1':
-            Create_Thread_Daemon(Filtro_Tipos_Acceso,
-                                 Get_File(os.path.join(FIRM, HUB, command)), 1, lectora % 3)
-            Clear_File(os.path.join(FIRM, HUB, status))
+    for medium in read_paths.keys():
+        for lectora, (status, command) in enumerate(read_paths[medium]):
+            if Get_File(os.path.join(FIRM, HUB, status)).strip() == '1':
+                Create_Thread_Daemon(Filtro_Tipos_Acceso,
+                                     Get_File(os.path.join(FIRM, HUB, command)), int(medium), lectora)
+                Clear_File(os.path.join(FIRM, HUB, status))
 
 
 while True:

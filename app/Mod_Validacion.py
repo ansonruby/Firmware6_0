@@ -4,7 +4,7 @@ from lib.Fun_Tipo_NFC import MD5
 from lib.Lib_Binary_Search import Binary_Search_Id, Binary_Remove_Id
 from lib.Lib_Request_Json import send_petition
 from lib.Lib_settings import Get_Mod_Validacion, Get_Lectoras
-from Mod_Actualizaciones import send_autorizations
+from Mod_Actualizaciones import send_autorizations, Actualizacion_Usuarios_Periodica
 import json
 import re
 import time
@@ -187,33 +187,37 @@ def Validar_QR(access_code, tipo_acceso, lectora):
 
 
 def Validar_PIN(access_code, tipo_acceso, lectora):
-    pin_index = access_code[:-4]
-    encrypt_pin = MD5(access_code[-4:])
     location = get_location_of_reader(lectora)
     file_db = location+NEW_TAB_USER_TIPO_7
 
-    access_index = Binary_Search_Id(file_db, pin_index)
+    access_index = Binary_Search_Id(file_db, access_code)
 
     if not access_index:
         return False
 
     db_data = Get_Line(file_db, access_index).strip().split(".")
 
+
     direction_ref = db_data[-1]
 
-    user_in_index = Buscar_usuario_adentro(direction_ref, lectora)
-    if user_in_index:
-        return (pin_index, direction_ref)
+    access_limit_quantity = int(db_data[2])
+
+    user_in_data = Buscar_usuario_adentro(
+        direction_ref, lectora)
+
+    if user_in_data:
+        user_in_index, user_access_quantity = user_in_data
+        if access_limit_quantity != 0 and access_limit_quantity <= user_access_quantity:
+            return False
+        elif user_access_quantity % 1 != 0:
+            return (user_in_index, direction_ref, access_limit_quantity)
 
     if tipo_acceso == 7:
-
-        if encrypt_pin != db_data[1]:
-            return False
 
         weekdays = ["F0", "FA", "FB", "FC", "FD", "FE", "FF"]
 
         today = weekdays[datetime.datetime.today().weekday()]
-        week_schedules = json.loads(db_data[2])
+        week_schedules = json.loads(db_data[1])
         if not today in week_schedules:
             return False
 
@@ -236,7 +240,7 @@ def Validar_PIN(access_code, tipo_acceso, lectora):
         if not valid_access_time:
             return False
 
-    return (str(pin_index), direction_ref)
+    return (str(access_code), direction_ref,access_limit_quantity)
 
 
 def Validar_NFC(access_code, tipo_acceso, lectora):
@@ -438,6 +442,7 @@ def Respaldo_Online(data, lectora):
 
     # Envio modulo respuesta
     Set_File(os.path.join(FIRM, HUB, comand_res[lectora]), respuesta_acceso)
+    Actualizacion_Usuarios_Periodica()
 
 
 def get_location_of_reader(lectora):

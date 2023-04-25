@@ -100,7 +100,7 @@ def Sort_data(Data_json):
             Delete_directory(Ruta_Location_BK)
             #return 1
         except Exception as e:
-            print 'Error en el buffer'#posiblemente por que no exite la lacacion
+            if MA_Mensajes: print 'Error en el buffer'#posiblemente por que no exite la lacacion
 #---------------------------------------------------------
 def Sort_updated_data(Data_json):
     update_data = Data_json["created_index_data"]
@@ -197,7 +197,7 @@ def send_autorizations():
             Data_Location['S'+str(Location)] = Data_Autorizados
             #print Data_Autorizados
     if Status_Autorisados == 1:
-        print Data_Location
+        # print Data_Location
         repuesta= send_petition("send_autorizations", method="POST", json_data= Data_Location)
         if repuesta.ok :
             #print 'se resivieron los datos eliminando'
@@ -232,7 +232,7 @@ def Actualizar_Inicio_Usuarios():
     Actualizacion_Usuarios()
 
 if __name__ == '__main__':
-    print Hora_Actual()
+    if MA_Mensajes: print Hora_Actual()
 
     if Bandera_Inicio_Usuario: Actualizar_Inicio_Usuarios()
 
