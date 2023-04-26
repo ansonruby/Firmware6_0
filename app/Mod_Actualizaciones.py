@@ -61,6 +61,11 @@ if Config_Mod['Usuarios_Time'] != "False":
     Bandera_Hora_Usuario = 1
     Hora_Usuario= Config_Mod['Usuarios_Time']
 
+Bandera_Hora_Salida_Automatica = 0
+if Config_Mod['Salida_Automantica'] != "False":
+    Bandera_Hora_Salida_Automatica = 1
+    Hora_Salida_Automatica= Config_Mod['Salida_Automantica']
+
 Bandera_Inicio_Usuario = 0
 if Config_Mod['Usuarios_Inicio'] != "False":
     Bandera_Inicio_Usuario = 1
@@ -137,6 +142,37 @@ def Actualizacion_Usuarios():
     if Data_sen != False and Data_sen.ok:
         Sort_data(Data_sen.json())
 #---------------------------------------------------------
+def Salida_Automatica():
+    db_path = os.path.join(FIRM, 'db')
+    locations = [location for location in os.listdir(
+        db_path) if location.startswith("S")]
+    for location in locations:
+        users_in_path = os.path.join(db_path, location, TAB_USER_IN)
+        if os.path.exists(users_in_path):
+            users_in = ""
+            users_in_json = {}
+            with open(users_in_path, 'r') as df:
+                users_in = df.read().strip()
+                df.close()
+            try:
+                users_in_json = json.loads(users_in)
+            except Exception as e:
+                users_in_json = {}
+
+            read_time = int(time.time()*1000)
+
+            for user in users_in_json.keys():
+                if users_in_json[user][1] % 1:
+                    athorization_code = user + "." + str(read_time) + ".13.1.1"
+                    Add_Line_End(
+                        os.path.join(db_path, location, NEW_AUTO_USER_TIPO_6),
+                        athorization_code+"\n"
+                    )
+
+            with open(users_in_path, 'w') as dfw:
+                dfw.write(json.dumps({}))
+                dfw.close()
+#---------------------------------------------------------
 def Actualizacion_Usuarios_Periodica():
     indexes_to_review = {}
     db_path=os.path.join(FIRM,'db')
@@ -153,7 +189,7 @@ def Actualizacion_Usuarios_Periodica():
         Sort_updated_data(Data_sen.json())
 #---------------------------------------------------------
 def Hora_Actualizacion_Usuarios(Hora_Actualizacion):
-    global Data_simulada,MA_Mensajes
+    global MA_Mensajes
     if Hora_Actualizacion == Hora_Actual():
         while 1:
             time.sleep(2)
@@ -161,9 +197,18 @@ def Hora_Actualizacion_Usuarios(Hora_Actualizacion):
         if MA_Mensajes: print 'Hora_Actualizacion_Usuarios'
         Actualizacion_Usuarios()
 #---------------------------------------------------------
+def Hora_Salida_Automatica_Usuarios(Hora_Salida_Automatica):
+    global MA_Mensajes
+    if Hora_Salida_Automatica == Hora_Actual():
+        while 1:
+            time.sleep(2)
+            if Hora_Actual() != Hora_Salida_Automatica : break
+        if MA_Mensajes: print 'Hora_Actualizacion_Usuarios'
+        Salida_Automatica()
+#---------------------------------------------------------
 def Periodo_Actualizacion_Usuarios(Periodo):
     global T_Antes
-    global Data_simulada
+    
     T_Actual = time.time()
     T_transcurido = int(T_Actual-T_Antes)
     #print 'T_Diferencia: ' + str(T_transcurido)
@@ -182,7 +227,7 @@ def send_autorizations():
         #print Ruta
         if os.path.exists(Ruta) == True:
             Data_Autorizados ={}
-            for Tipo in range(1,7):
+            for Tipo in range(1,8):
                 Archivo = 'Tipo_'+str(Tipo)
                 Ruta = os.path.join(FIRM,'db','S'+str(Location),DATA,'Autorizaciones',Archivo +'.txt')
                 #print Ruta
@@ -204,7 +249,7 @@ def send_autorizations():
             for Location in range(3):
                 Ruta = os.path.join(FIRM,'db','S'+str(Location))
                 if os.path.exists(Ruta) == True:
-                    for Tipo in range(1,7):
+                    for Tipo in range(1,8):
                         Archivo = 'Tipo_'+str(Tipo)
                         Ruta = os.path.join(FIRM,'db','S'+str(Location),DATA,'Autorizaciones',Archivo +'.txt')
                         #print Ruta
@@ -216,7 +261,7 @@ def send_autorizations():
 #---------------------------------------------------------
 def Periodo_send_autorizations(Periodo):
     global T_Antes_send_autorizations
-    global Data_simulada
+    
     T_Actual = time.time()
     T_transcurido = int(T_Actual-T_Antes_send_autorizations)
     #print 'T_Diferencia: ' + str(T_transcurido)
@@ -238,7 +283,7 @@ if __name__ == '__main__':
 
     while 1:
         #---------------------------------------------------------
-        #  Proceso 1: Tiempo de espera para disminuir proceso
+        # Proceso 1: Tiempo de espera para disminuir proceso
         #---------------------------------------------------------
         time.sleep(Tiempo_stop) #minimo 1
         #---------------------------------------------------------
@@ -250,21 +295,25 @@ if __name__ == '__main__':
         #---------------------------------------------------------
         if Bandera_Periodo_Usuario: Periodo_Actualizacion_Usuarios(Tiempo_periodo_Usuarios)
         #---------------------------------------------------------
-        #  Proceso 4:Enviar usuarios a servidor periodicamente si hay
+        # Proceso 4:Enviar usuarios a servidor periodicamente si hay
         #---------------------------------------------------------
         if Bandera_Periodo_Autorizacion: Periodo_send_autorizations(Tiempo_periodo_Autorizacion)
+        #---------------------------------------------------------
+        # Proceso 5: Salida de usuarios que sigan en la locaion ("01:00 AM") # 01:00 AM
+        #---------------------------------------------------------
+        if Bandera_Hora_Salida_Automatica: Hora_Salida_Automatica_Usuarios(Hora_Salida_Automatica)
 
 
-    #-------------------------------------
-    # pruebas de uso
-    #-------------------------------------
-    #actualizacion de usuario se realisa todo al mismo timepo ,
-    # posiblemente hay que separa para cada configuracion de locacion
-    # falta realisa hilos por cada accion par que cada una sea separada
-    #Actualizacion_Usuarios()
-    #send_autorizations()
-    """
-    while 1:
-        Periodo_send_autorizations(6)
-    """
-    #print S0+STATUS_QR_S1
+        #-------------------------------------
+        # pruebas de uso
+        #-------------------------------------
+        #actualizacion de usuario se realisa todo al mismo timepo ,
+        # posiblemente hay que separa para cada configuracion de locacion
+        # falta realisa hilos por cada accion par que cada una sea separada
+        #Actualizacion_Usuarios()
+        #send_autorizations()
+        """
+        while 1:
+            Periodo_send_autorizations(6)
+        """
+        #print S0+STATUS_QR_S1

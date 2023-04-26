@@ -28,6 +28,7 @@
             "Time_Sleep_Mod": "2",
             "Usuarios_Periodo": "300",
             "Usuarios_Time": "02:00 AM",
+            "Salida_Automantica": "01:00 AM",
             "Usuarios_Inicio": "True",
             "Actualizaciones_Periodo": "300"
         },

@@ -13,6 +13,8 @@ import os
 
 Configs = Get_Mod_Validacion()
 Lectoras = Get_Lectoras()
+weekdays = ["F0", "FA", "FB", "FC", "FD", "FE", "FF"]
+today = weekdays[datetime.datetime.today().weekday()]
 
 config_access = "Acceso fisico"  # "Accesos" o "Acceso dinamico" o "Acceso fisico"
 
@@ -21,6 +23,9 @@ if "Configuracion_Acceso" in Configs:
 
 
 def Validar_Acceso(access_code, tipo_acceso, medio_acceso, lectora):
+    global today
+    today = weekdays[datetime.datetime.today().weekday()]
+
     valid_access = False
     if medio_acceso == 1:
         valid_access = Validar_QR(access_code, tipo_acceso, lectora)
@@ -52,6 +57,7 @@ def Validar_QR_Antiguo(access_data, tipo_acceso, medio_acceso, lectora):
 
 
 def Validar_QR(access_code, tipo_acceso, lectora):
+    global today
     separator = re.findall("F[A-F]", access_code)
 
     # Separador no encontrado
@@ -84,8 +90,8 @@ def Validar_QR(access_code, tipo_acceso, lectora):
             return False
 
         # Dia de la semana incorrecto => F0 - FF (Lunes a domingo)
-        weekdays = ["F0", "FA", "FB", "FC", "FD", "FE", "FF"]
-        if weekdays[datetime.datetime.today().weekday()] != separator:
+
+        if today != separator:
             return False
 
     tabs_users = [
@@ -95,7 +101,7 @@ def Validar_QR(access_code, tipo_acceso, lectora):
         NEW_TAB_USER_TIPO_4,
         NEW_TAB_USER_TIPO_5
     ]
-    location = get_location_of_reader(lectora)
+    location = get_location_path_of_reader(lectora)
     file_db = location+tabs_users[tipo_acceso-1]
     access_index = False
     access_index = Binary_Search_Id(file_db, user_index)
@@ -113,10 +119,10 @@ def Validar_QR(access_code, tipo_acceso, lectora):
 
     user_in_data = Buscar_usuario_adentro(
         direction_ref, lectora)
-
+    
     if user_in_data:
-        user_in_index, user_access_quantity = user_in_data
-        if access_limit_quantity != 0 and access_limit_quantity <= user_access_quantity:
+        user_in_index, user_access_quantity, last_access_day = user_in_data
+        if access_limit_quantity != 0 and access_limit_quantity <= user_access_quantity and last_access_day==today:
             return False
         elif user_access_quantity % 1 != 0:
             if tipo_acceso in [2, 4]:
@@ -187,7 +193,8 @@ def Validar_QR(access_code, tipo_acceso, lectora):
 
 
 def Validar_PIN(access_code, tipo_acceso, lectora):
-    location = get_location_of_reader(lectora)
+    global today
+    location = get_location_path_of_reader(lectora)
     file_db = location+NEW_TAB_USER_TIPO_7
 
     access_index = Binary_Search_Id(file_db, access_code)
@@ -197,7 +204,6 @@ def Validar_PIN(access_code, tipo_acceso, lectora):
 
     db_data = Get_Line(file_db, access_index).strip().split(".")
 
-
     direction_ref = db_data[-1]
 
     access_limit_quantity = int(db_data[2])
@@ -206,17 +212,14 @@ def Validar_PIN(access_code, tipo_acceso, lectora):
         direction_ref, lectora)
 
     if user_in_data:
-        user_in_index, user_access_quantity = user_in_data
-        if access_limit_quantity != 0 and access_limit_quantity <= user_access_quantity:
+        _, user_access_quantity, last_access_day = user_in_data
+        if access_limit_quantity != 0 and access_limit_quantity <= user_access_quantity and last_access_day==today:
             return False
         elif user_access_quantity % 1 != 0:
-            return (user_in_index, direction_ref, access_limit_quantity)
+            return (db_data[-2], direction_ref, access_limit_quantity)
 
     if tipo_acceso == 7:
 
-        weekdays = ["F0", "FA", "FB", "FC", "FD", "FE", "FF"]
-
-        today = weekdays[datetime.datetime.today().weekday()]
         week_schedules = json.loads(db_data[1])
         if not today in week_schedules:
             return False
@@ -240,13 +243,14 @@ def Validar_PIN(access_code, tipo_acceso, lectora):
         if not valid_access_time:
             return False
 
-    return (str(access_code), direction_ref,access_limit_quantity)
+    return (db_data[-2], direction_ref, access_limit_quantity)
 
 
 def Validar_NFC(access_code, tipo_acceso, lectora):
+    global today
     valid_access = False
     access_key = False
-    location = get_location_of_reader(lectora)
+    location = get_location_path_of_reader(lectora)
     if tipo_acceso == 6:
         access_key = MD5(access_code)
         db = Get_File(location+TAB_USER_TIPO_6).strip().split("\n")
@@ -258,9 +262,6 @@ def Validar_NFC(access_code, tipo_acceso, lectora):
 
             if access_key == nfc_code:
 
-                weekdays = ["F0", "FA", "FB", "FC", "FD", "FE", "FF"]
-
-                today = weekdays[datetime.datetime.today().weekday()]
                 week_schedules = json.loads(db_data[1])
                 if not today in week_schedules:
                     return False
@@ -292,10 +293,11 @@ def Validar_NFC(access_code, tipo_acceso, lectora):
 
 def Buscar_usuario_adentro(access_key,  lectora):
     global config_access
-    location = get_location_of_reader(lectora)
+    location = get_location_path_of_reader(lectora)
     if (config_access == "Acceso fisico" and get_direction_of_reader(lectora) == 1) or config_access == "Acceso dinamico":
         if access_key and access_key != "":
             users_in = ""
+            users_in_json = {}
             with open(location+TAB_USER_IN, 'r') as df:
                 users_in = df.read().strip()
                 df.close()
@@ -307,14 +309,14 @@ def Buscar_usuario_adentro(access_key,  lectora):
             if not str(access_key) in users_in_json:
                 return False
 
-            return users_in_json[str(access_key)][0:2]
+            return users_in_json[str(access_key)]
 
 
 def Definir_Direccion(access_key, user_index, access_limit_quantity, lectora):
-    global config_access
+    global config_access, today
 
     direction = "0"
-    location = get_location_of_reader(lectora)
+    location = get_location_path_of_reader(lectora)
 
     if config_access == "Accesos":
         return direction
@@ -332,7 +334,7 @@ def Definir_Direccion(access_key, user_index, access_limit_quantity, lectora):
             if get_direction_of_reader(lectora) and str(access_key) in users_in_json:
                 users_in_json.pop(str(access_key))
             else:
-                users_in_json[str(access_key)] = [user_index, "1"]
+                users_in_json[str(access_key)] = [user_index, "1", today]
 
             users_in = json.dumps(users_in_json, indent=4)
             with open(location+TAB_USER_IN, 'w') as dfw:
@@ -353,16 +355,23 @@ def Definir_Direccion(access_key, user_index, access_limit_quantity, lectora):
 
             if str(access_key) in users_in_json:
                 if int(access_limit_quantity) != 0:
+                    last_access_day = users_in_json[str(access_key)][2]
                     access_cycle = users_in_json[str(access_key)][1]
                     if (access_cycle % 1) != 0:
                         direction = "1"
-                    users_in_json[str(access_key)] = [
-                        user_index, access_cycle + 0.5]
+                    elif last_access_day != today:
+                        access_cycle=0
+
+                    if last_access_day != today and direction == "1":
+                        users_in_json.pop(str(access_key))
+                    else:
+                        users_in_json[str(access_key)] = [
+                            user_index, access_cycle + 0.5, today]
                 else:
                     direction = "1"
                     users_in_json.pop(str(access_key))
             else:
-                users_in_json[str(access_key)] = [user_index, 0.5]
+                users_in_json[str(access_key)] = [user_index, 0.5, today]
             users_in = json.dumps(users_in_json, indent=4)
 
             with open(location+TAB_USER_IN, 'w') as dfw:
@@ -395,7 +404,7 @@ def Enviar_Respuesta(user_index, tipo_acceso, medio_acceso, lectora, direction_r
             NEW_AUTO_USER_TIPO_6,
             NEW_AUTO_USER_TIPO_7
         ]
-        location = get_location_of_reader(lectora)
+        location = get_location_path_of_reader(lectora)
         Add_Line_End(
             location+tabs_autorizaciones[tipo_acceso-1],
             athorization_code+"\n"
@@ -445,7 +454,7 @@ def Respaldo_Online(data, lectora):
     Actualizacion_Usuarios_Periodica()
 
 
-def get_location_of_reader(lectora):
+def get_location_path_of_reader(lectora):
     global Lectoras
 
     locations = {
