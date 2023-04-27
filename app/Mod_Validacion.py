@@ -31,10 +31,12 @@ def Validar_Acceso(access_code, tipo_acceso, medio_acceso, lectora):
         valid_access = Validar_QR(access_code, tipo_acceso, lectora)
     elif medio_acceso == 2:
         valid_access = Validar_PIN(access_code, tipo_acceso, lectora)
-    elif medio_acceso == 11:
-        valid_access = Validar_NFC(access_code, tipo_acceso, lectora)
+    # elif medio_acceso == 11:
+    #     valid_access = Validar_NFC(access_code, tipo_acceso, lectora)
 
-    if valid_access:
+    if valid_access == "Access denied":
+        Enviar_Respuesta(None, None, None, lectora, None, None)
+    elif valid_access:
         user_index, direction_ref, access_limit_quantity = valid_access
         Enviar_Respuesta(user_index, tipo_acceso,
                          medio_acceso, lectora, direction_ref, access_limit_quantity)
@@ -62,7 +64,7 @@ def Validar_QR(access_code, tipo_acceso, lectora):
 
     # Separador no encontrado
     if len(separator) == 0:
-        return False
+        return "Access denied"
     else:
         separator = separator[0]
 
@@ -87,12 +89,12 @@ def Validar_QR(access_code, tipo_acceso, lectora):
         # Tiempo de lectura excedido (milisegundos)
         time_diff = read_time-qr_time
         if time_diff <= 0 or time_diff > 1000 * 8:
-            return False
+            return "Access denied"
 
         # Dia de la semana incorrecto => F0 - FF (Lunes a domingo)
 
         if today != separator:
-            return False
+            return "Access denied"
 
     tabs_users = [
         NEW_TAB_USER_TIPO_1,
@@ -119,11 +121,11 @@ def Validar_QR(access_code, tipo_acceso, lectora):
 
     user_in_data = Buscar_usuario_adentro(
         direction_ref, lectora)
-    
+
     if user_in_data:
         user_in_index, user_access_quantity, last_access_day = user_in_data
-        if access_limit_quantity != 0 and access_limit_quantity <= user_access_quantity and last_access_day==today:
-            return False
+        if access_limit_quantity != 0 and access_limit_quantity <= user_access_quantity and last_access_day == today:
+            return "Access denied"
         elif user_access_quantity % 1 != 0:
             if tipo_acceso in [2, 4]:
                 return (user_in_index, direction_ref, access_limit_quantity)
@@ -133,7 +135,7 @@ def Validar_QR(access_code, tipo_acceso, lectora):
     if tipo_acceso in [1, 5]:
         week_schedules = json.loads(db_data[1])
         if not separator in week_schedules:
-            return False
+            return "Access denied"
 
         day_schedules = week_schedules[separator]
 
@@ -152,7 +154,7 @@ def Validar_QR(access_code, tipo_acceso, lectora):
                 break
 
         if not valid_access_time:
-            return False
+            return "Access denied"
 
     elif tipo_acceso == 2:
         bookings = json.loads(db_data[1])
@@ -165,13 +167,13 @@ def Validar_QR(access_code, tipo_acceso, lectora):
                 break
 
         if not active_booking:
-            return False
+            return "Access denied"
 
     elif tipo_acceso == 3:
 
         # Fuera del tiempo de uso (milisegundos)
         if not (read_time > int(db_data[1]) and read_time < int(db_data[2])):
-            return False
+            return "Access denied"
 
         Binary_Remove_Id(file_db, user_index)
 
@@ -187,7 +189,7 @@ def Validar_QR(access_code, tipo_acceso, lectora):
         if start_time <= read_time and end_time >= read_time:
             user_index = invitation_index
         else:
-            return False
+            return "Access denied"
 
     return (str(user_index), direction_ref, access_limit_quantity)
 
@@ -213,8 +215,8 @@ def Validar_PIN(access_code, tipo_acceso, lectora):
 
     if user_in_data:
         _, user_access_quantity, last_access_day = user_in_data
-        if access_limit_quantity != 0 and access_limit_quantity <= user_access_quantity and last_access_day==today:
-            return False
+        if access_limit_quantity != 0 and access_limit_quantity <= user_access_quantity and last_access_day == today:
+            return "Access denied"
         elif user_access_quantity % 1 != 0:
             return (db_data[-2], direction_ref, access_limit_quantity)
 
@@ -222,7 +224,7 @@ def Validar_PIN(access_code, tipo_acceso, lectora):
 
         week_schedules = json.loads(db_data[1])
         if not today in week_schedules:
-            return False
+            return "Access denied"
 
         day_schedules = week_schedules[today]
 
@@ -241,7 +243,7 @@ def Validar_PIN(access_code, tipo_acceso, lectora):
                 break
 
         if not valid_access_time:
-            return False
+            return "Access denied"
 
     return (db_data[-2], direction_ref, access_limit_quantity)
 
@@ -360,7 +362,7 @@ def Definir_Direccion(access_key, user_index, access_limit_quantity, lectora):
                     if (access_cycle % 1) != 0:
                         direction = "1"
                     elif last_access_day != today:
-                        access_cycle=0
+                        access_cycle = 0
 
                     if last_access_day != today and direction == "1":
                         users_in_json.pop(str(access_key))
