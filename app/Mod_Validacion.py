@@ -60,7 +60,7 @@ def Validar_QR_Antiguo(access_data, tipo_acceso, medio_acceso, lectora):
 
 def Validar_QR(access_code, tipo_acceso, lectora):
     global today
-    separator = re.findall("F[A-F]", access_code)
+    separator = re.findall("F[0A-F]", access_code)
 
     # Separador no encontrado
     if len(separator) == 0:
