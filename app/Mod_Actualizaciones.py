@@ -115,18 +115,19 @@ def Sort_updated_data(Data_json):
             tipo_path = os.path.join(
                 FIRM, 'db', location, NEW_DATA[:-1], tipo+'.txt')
 
-            #Create and update indexes
-            for index_data in update_data[location][tipo]:
-                if index_data=="":
-                    continue
-                Binary_Update_Id(tipo_path,index_data)
-
             #Delete indexes
             if location in delete_data and tipo in delete_data[location]:
                 for index_data in delete_data[location][tipo]:
                     if index_data=="":
                         continue
                     Binary_Remove_Id(tipo_path,index_data)           
+                    
+            #Create and update indexes
+            for index_data in update_data[location][tipo]:
+                if index_data=="":
+                    continue
+                Binary_Update_Id(tipo_path,index_data)
+
 
 #---------------------------------------------------------
 def Hora_Actual():
