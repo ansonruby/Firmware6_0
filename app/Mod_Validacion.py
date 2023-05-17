@@ -88,7 +88,7 @@ def Validar_QR(access_code, tipo_acceso, lectora):
 
         # Tiempo de lectura excedido (milisegundos)
         time_diff = read_time-qr_time
-        if time_diff <= 0 or time_diff > 1000 * 10:
+        if time_diff <= 0 or time_diff > 1000 * 12:
             return "Access denied"
 
         # Dia de la semana incorrecto => F0 - FF (Lunes a domingo)
