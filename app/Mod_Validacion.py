@@ -187,7 +187,7 @@ def Validar_QR(access_code, tipo_acceso, lectora):
         end_time = int(invitations[invitation_index][1])
 
         if start_time <= read_time and end_time >= read_time:
-            user_index = invitation_index
+            user_index = user_index +"E"+ invitation_index  
         else:
             return "Access denied"
 
